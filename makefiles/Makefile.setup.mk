@@ -56,3 +56,8 @@ clean: ## Clean all build artifacts and node_modules
 	@find packages -name "node_modules" -type d -exec rm -rf {} + 2>/dev/null || true
 	@rm -rf node_modules
 	@$(call log_success,Clean complete)
+
+
+clear-port: ## Clear common dev port
+	$(call kill_port,8888)
+	$(call kill_port,8887)

@@ -22,6 +22,10 @@
  * GSI2: List all analyses for a repo / List remediations
  *   GSI2PK: ANALYSIS#<repoId> | REMEDIATION#<repoId>
  *   GSI2SK: <timestamp>
+ *
+ * GSI3: List all teams for a user
+ *   GSI3PK: USER#<userId>
+ *   GSI3SK: TEAM#<teamId>
  */
 
 import { createHash, randomBytes } from 'node:crypto';
@@ -257,6 +261,8 @@ export async function createTeam(team: Team, ownerId: string): Promise<Team> {
     SK: `#MEMBER#${ownerId}`,
     GSI1PK: `TEAM#${team.id}`,
     GSI1SK: `MEMBER#${ownerId}`,
+    GSI3PK: `USER#${ownerId}`,
+    GSI3SK: `TEAM#${team.id}`,
     teamId: team.id,
     userId: ownerId,
     role: 'owner',
@@ -307,6 +313,32 @@ export async function getTeamBySlug(slug: string): Promise<Team | null> {
   return result.Items?.[0] as Team | null;
 }
 
+export async function listUserTeams(
+  userId: string
+): Promise<(TeamMember & { team: Team })[]> {
+  const result = await doc.send(
+    new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: 'GSI3',
+      KeyConditionExpression: 'GSI3PK = :pk AND begins_with(GSI3SK, :prefix)',
+      ExpressionAttributeValues: {
+        ':pk': `USER#${userId}`,
+        ':prefix': 'TEAM#',
+      },
+    })
+  );
+
+  const memberships = result.Items || [];
+  const enrichedTeams = await Promise.all(
+    memberships.map(async (membership) => {
+      const team = await getTeam(membership.teamId);
+      return { ...membership, team } as TeamMember & { team: Team };
+    })
+  );
+
+  return enrichedTeams;
+}
+
 export async function listTeamMembers(
   teamId: string
 ): Promise<(TeamMember & { user: User })[]> {
@@ -345,6 +377,8 @@ export async function addTeamMember(
     SK: `#MEMBER#${userId}`,
     GSI1PK: `TEAM#${teamId}`,
     GSI1SK: `MEMBER#${userId}`,
+    GSI3PK: `USER#${userId}`,
+    GSI3SK: `TEAM#${teamId}`,
     teamId,
     userId,
     role,
@@ -840,8 +874,16 @@ export async function deleteApiKey(userId: string, id: string): Promise<void> {
     new BatchWriteCommand({
       RequestItems: {
         [TABLE_NAME]: [
-          { DeleteRequest: { Key: { PK: `USER#${userId}`, SK: `APIKEY#${id}` } } },
-          { DeleteRequest: { Key: { PK: `APIKEY#${keyHash}`, SK: '#METADATA' } } },
+          {
+            DeleteRequest: {
+              Key: { PK: `USER#${userId}`, SK: `APIKEY#${id}` },
+            },
+          },
+          {
+            DeleteRequest: {
+              Key: { PK: `APIKEY#${keyHash}`, SK: '#METADATA' },
+            },
+          },
         ],
       },
     })

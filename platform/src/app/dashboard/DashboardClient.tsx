@@ -12,7 +12,7 @@ import {
   scoreGlow,
   scoreLabel,
 } from '@aiready/components';
-import type { Repository, Analysis, ApiKey } from '@/lib/db';
+import type { Repository, Analysis, ApiKey, Team, TeamMember } from '@/lib/db';
 
 type RepoWithAnalysis = Repository & { latestAnalysis: Analysis | null };
 
@@ -24,15 +24,45 @@ interface Props {
     image?: string | null;
   };
   repos: RepoWithAnalysis[];
+  teams: (TeamMember & { team: Team })[];
   overallScore: number | null;
 }
 
 export default function DashboardClient({
   user,
   repos: initialRepos,
+  teams,
   overallScore,
 }: Props) {
+  const [currentTeamId, setCurrentTeamId] = useState<string | 'personal'>(
+    'personal'
+  );
   const [repos, setRepos] = useState<RepoWithAnalysis[]>(initialRepos);
+
+  useEffect(() => {
+    if (currentTeamId === 'personal') {
+      setRepos(initialRepos);
+    } else {
+      fetchTeamRepos(currentTeamId);
+    }
+  }, [currentTeamId, initialRepos]);
+
+  async function fetchTeamRepos(teamId: string) {
+    try {
+      const res = await fetch(`/api/repos?teamId=${teamId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRepos(
+          data.repos.map((r: any) => ({
+            ...r,
+            latestAnalysis: r.latestAnalysis || null,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error('Failed to fetch team repos:', err);
+    }
+  }
   const [showAddRepo, setShowAddRepo] = useState(false);
   const [addRepoForm, setAddRepoForm] = useState({
     name: '',
@@ -108,7 +138,10 @@ export default function DashboardClient({
       const res = await fetch('/api/repos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addRepoForm),
+        body: JSON.stringify({
+          ...addRepoForm,
+          teamId: currentTeamId === 'personal' ? undefined : currentTeamId,
+        }),
       });
 
       const data = await res.json();
@@ -291,6 +324,32 @@ export default function DashboardClient({
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Team Switcher */}
+        <div className="flex items-center gap-2 p-1 bg-slate-900/50 rounded-xl border border-slate-700/50 w-fit">
+          <button
+            onClick={() => setCurrentTeamId('personal')}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              currentTeamId === 'personal'
+                ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Personal
+          </button>
+          {teams.map((t) => (
+            <button
+              key={t.teamId}
+              onClick={() => setCurrentTeamId(t.teamId)}
+              className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                currentTeamId === t.teamId
+                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {t.team.name}
+            </button>
+          ))}
+        </div>
         {/* Welcome + overall score */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -568,6 +627,16 @@ export default function DashboardClient({
             </div>
           </div>
         </section>
+
+        {/* Team Management Section */}
+        {currentTeamId !== 'personal' && (
+          <TeamManagement
+            teamId={currentTeamId}
+            teamName={
+              teams.find((t) => t.teamId === currentTeamId)?.team.name || 'Team'
+            }
+          />
+        )}
       </main>
 
       {/* New Key Modal */}
@@ -915,4 +984,132 @@ function formatBreakdownKey(key: string): string {
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, (s) => s.toUpperCase())
     .trim();
+}
+
+function TeamManagement({
+  teamId,
+  teamName,
+}: {
+  teamId: string;
+  teamName: string;
+}) {
+  const [members, setMembers] = useState<any[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [teamId]);
+
+  async function fetchMembers() {
+    try {
+      const res = await fetch(`/api/teams?teamId=${teamId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data.members);
+      }
+    } catch (err) {
+      console.error('Failed to fetch members:', err);
+    }
+  }
+
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId, email: inviteEmail }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setInviteEmail('');
+        fetchMembers();
+      } else {
+        setError(data.error || 'Failed to invite member');
+      }
+    } catch (err) {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="glass-card rounded-2xl p-6 space-y-6 border border-purple-500/10">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-white">
+          Team Management: {teamName}
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">
+            Invite Member
+          </h3>
+          <form onSubmit={handleInvite} className="flex gap-2">
+            <input
+              type="email"
+              placeholder="colleague@company.com"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              className="flex-1 bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50"
+              required
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg transition-all disabled:opacity-50 shadow-lg shadow-purple-600/20"
+            >
+              {loading ? 'Sending...' : 'Invite'}
+            </button>
+          </form>
+          {error && (
+            <p className="text-red-400 text-xs mt-3 font-medium">{error}</p>
+          )}
+          <p className="text-[10px] text-slate-500 mt-2">
+            Note: Users must have logged into AIReady at least once to be
+            discovered.
+          </p>
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">
+            Team Members
+          </h3>
+          <div className="space-y-2">
+            {members.map((m) => (
+              <div
+                key={m.userId}
+                className="flex items-center justify-between bg-slate-800/30 p-3 rounded-xl border border-slate-700/30"
+              >
+                <div className="flex items-center gap-3">
+                  {m.user?.image ? (
+                    <img
+                      src={m.user.image}
+                      className="w-8 h-8 rounded-full border border-slate-700"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] text-white">
+                      {m.user?.name?.[0] || m.user?.email?.[0]}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      {m.user?.name || m.user?.email}
+                    </p>
+                    <p className="text-[10px] text-slate-500 uppercase font-black">
+                      {m.role}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }

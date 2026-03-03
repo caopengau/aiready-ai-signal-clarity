@@ -3,22 +3,33 @@ import { auth } from '@/app/api/auth/[...nextauth]/route';
 import {
   createRepository,
   listUserRepositories,
+  listTeamRepositories,
   getRepository,
   deleteRepository,
 } from '@/lib/db';
 import { planLimits, MVP_FREE_ONLY } from '@/lib/plans';
 import { randomUUID } from 'crypto';
 
-// GET /api/repos - List user's repositories
-export async function GET() {
+// GET /api/repos - List repositories
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const repos = await listUserRepositories(session.user.id);
-    const maxRepos = planLimits.free.maxRepos; // 3 repos for free tier
+    const { searchParams } = new URL(request.url);
+    const teamId = searchParams.get('teamId');
+
+    let repos;
+    if (teamId) {
+      // TODO: Verify user is a member of the team
+      repos = await listTeamRepositories(teamId);
+    } else {
+      repos = await listUserRepositories(session.user.id);
+    }
+
+    const maxRepos = planLimits.free.maxRepos; // 3 repos for free tier (default)
 
     return NextResponse.json({
       repos,
@@ -46,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, url, description, defaultBranch = 'main' } = body;
+    const { name, url, description, defaultBranch = 'main', teamId } = body;
 
     if (!name || !url) {
       return NextResponse.json(
@@ -64,14 +75,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check repo limit (Free tier: 3 repos)
-    const existingRepos = await listUserRepositories(session.user.id);
+    // Check repo limit
+    let existingRepos;
+    if (teamId) {
+      existingRepos = await listTeamRepositories(teamId);
+    } else {
+      existingRepos = await listUserRepositories(session.user.id);
+    }
+
     const maxRepos = planLimits.free.maxRepos; // 3 repos for free tier
 
     if (existingRepos.length >= maxRepos) {
       return NextResponse.json(
         {
-          error: `You've reached the maximum of ${maxRepos} repositories on the Free plan.`,
+          error: `Limit reached. You have ${existingRepos.length} repositories.`,
           code: 'REPO_LIMIT_REACHED',
           currentCount: existingRepos.length,
           maxRepos,
@@ -84,6 +101,7 @@ export async function POST(request: NextRequest) {
     const repo = await createRepository({
       id: randomUUID(),
       userId: session.user.id,
+      teamId,
       name,
       url,
       description,

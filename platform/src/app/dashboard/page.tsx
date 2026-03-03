@@ -5,6 +5,7 @@ import {
   getLatestAnalysis,
   getUserByEmail,
   createUser,
+  listUserTeams,
 } from '@/lib/db';
 import DashboardClient from './DashboardClient';
 
@@ -17,6 +18,7 @@ export default async function DashboardPage() {
 
   let user;
   let repos: any[] = [];
+  let teams: any[] = [];
 
   try {
     // Ensure user exists in our database (lazy creation for OAuth users)
@@ -34,8 +36,9 @@ export default async function DashboardPage() {
       });
     }
 
-    // Fetch user's repositories
+    // Fetch user's repositories and teams
     repos = await listUserRepositories(user.id);
+    teams = await listUserTeams(user.id);
   } catch (error) {
     console.error('Dashboard error:', error);
     // If there's a database error, still show dashboard with empty state
@@ -76,6 +79,7 @@ export default async function DashboardPage() {
         image: user.image,
       }}
       repos={reposWithAnalysis}
+      teams={teams}
       overallScore={overallScore}
     />
   );
