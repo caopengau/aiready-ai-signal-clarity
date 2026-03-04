@@ -91,8 +91,42 @@ export default function RepoDetailClient({ repo, user }: Props) {
       ([toolName, toolData]: [string, any]) => {
         if (Array.isArray(toolData.details)) {
           toolData.details.forEach((issue: any) => {
-            // Handle tool-specific message mapping
-            let msg = issue.message || issue.description || issue.action;
+            // Normalize locations (files/lines)
+            const locations: Array<{ path: string; line?: number }> = [];
+
+            // 1. Duplicate patterns (file1/line1, file2/line2)
+            if (issue.file1)
+              locations.push({ path: issue.file1, line: issue.line1 });
+            if (issue.file2)
+              locations.push({ path: issue.file2, line: issue.line2 });
+
+            // 2. Context analysis & Naming (file/line)
+            if (issue.file && !issue.file1) {
+              locations.push({ path: issue.file, line: issue.line });
+            }
+
+            // 3. Generic Issues & Consistency (location.file/location.line)
+            if (issue.location?.file && !issue.file && !issue.file1) {
+              locations.push({
+                path: issue.location.file,
+                line: issue.location.line,
+              });
+            }
+
+            // 4. Analysis Results (fileName)
+            if (issue.fileName && locations.length === 0) {
+              locations.push({ path: issue.fileName });
+            }
+
+            // 5. Architecture/Affected Paths (affectedPaths[])
+            if (Array.isArray(issue.affectedPaths)) {
+              issue.affectedPaths.forEach((p: string) =>
+                locations.push({ path: p })
+              );
+            }
+
+            // Normalize message & action
+            let msg = issue.message || issue.description || 'Unknown issue';
             let act =
               issue.action ||
               issue.suggestion ||
@@ -100,6 +134,7 @@ export default function RepoDetailClient({ repo, user }: Props) {
                 ? issue.recommendations[0]
                 : issue.recommendation);
 
+            // Tool-specific overrides for better messages
             if (toolName === 'semanticDuplicates' && issue.similarity) {
               msg = `${issue.patternType ? issue.patternType.charAt(0).toUpperCase() + issue.patternType.slice(1) : 'Duplicate'} (${Math.round(issue.similarity * 100)}% similarity)`;
               act = issue.suggestion || issue.action;
@@ -116,6 +151,7 @@ export default function RepoDetailClient({ repo, user }: Props) {
             allIssues.push({
               ...issue,
               tool: toolName,
+              locations,
               // Normalize severity: mapping recommendations' 'priority' to 'severity'
               severity:
                 issue.severity ||
@@ -126,8 +162,7 @@ export default function RepoDetailClient({ repo, user }: Props) {
                     : issue.priority === 'low'
                       ? 'minor'
                       : 'major'),
-              // Normalize message
-              message: msg || 'Unknown issue',
+              message: msg,
               action: act,
             });
           });
@@ -440,9 +475,13 @@ export default function RepoDetailClient({ repo, user }: Props) {
                                   </span>
                                   {!isExpanded && (
                                     <div className="flex gap-2">
-                                      {mainFile && (
+                                      {issue.locations.length > 0 && (
                                         <span className="text-[10px] text-slate-600 font-mono truncate max-w-[150px]">
-                                          {String(mainFile).split('/').pop()}
+                                          {issue.locations[0].path
+                                            .split('/')
+                                            .pop()}
+                                          {issue.locations[0].line &&
+                                            `:L${issue.locations[0].line}`}
                                         </span>
                                       )}
                                     </div>
@@ -460,47 +499,25 @@ export default function RepoDetailClient({ repo, user }: Props) {
 
                               {!isExpanded && (
                                 <div className="flex flex-wrap gap-2 pt-1 opacity-70">
-                                  {allIssues
-                                    .filter(
-                                      (i) =>
-                                        i.tool === issue.tool &&
-                                        (i.message === issue.message ||
-                                          i.action === issue.action)
-                                    )
+                                  {issue.locations
                                     .slice(0, 3)
-                                    .map((i, idx) => {
-                                      const f =
-                                        i.file ||
-                                        i.fileName ||
-                                        i.file1 ||
-                                        i.location?.file;
-                                      if (!f) return null;
-                                      return (
+                                    .map(
+                                      (
+                                        loc: { path: string; line?: number },
+                                        idx: number
+                                      ) => (
                                         <div
                                           key={idx}
                                           className="text-[9px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/5"
                                         >
-                                          {String(f).split('/').pop()}
-                                          {(i.line || i.location?.line) &&
-                                            `:L${i.line || i.location.line}`}
+                                          {loc.path.split('/').pop()}
+                                          {loc.line && `:L${loc.line}`}
                                         </div>
-                                      );
-                                    })}
-                                  {allIssues.filter(
-                                    (i) =>
-                                      i.tool === issue.tool &&
-                                      (i.message === issue.message ||
-                                        i.action === issue.action)
-                                  ).length > 3 && (
+                                      )
+                                    )}
+                                  {issue.locations.length > 3 && (
                                     <div className="text-[9px] font-mono text-slate-500 py-0.5">
-                                      +
-                                      {allIssues.filter(
-                                        (i) =>
-                                          i.tool === issue.tool &&
-                                          (i.message === issue.message ||
-                                            i.action === issue.action)
-                                      ).length - 3}
-                                      more
+                                      +{issue.locations.length - 3} more
                                     </div>
                                   )}
                                 </div>
@@ -517,34 +534,29 @@ export default function RepoDetailClient({ repo, user }: Props) {
                                     <div className="pt-4 space-y-4">
                                       {/* Location & Context Tags */}
                                       <div className="flex flex-wrap gap-2 pt-1">
-                                        {issue.file1 && (
-                                          <div className="flex items-center gap-2 text-[10px] font-mono text-cyan-400 bg-cyan-400/5 px-2 py-1 rounded border border-cyan-400/10">
-                                            <FileIcon className="w-3 h-3" />
-                                            Target: {issue.file1}
-                                            {issue.location?.line && (
-                                              <span className="text-slate-600">
-                                                :L{issue.location.line}
-                                              </span>
-                                            )}
-                                          </div>
+                                        {issue.locations.map(
+                                          (
+                                            loc: {
+                                              path: string;
+                                              line?: number;
+                                            },
+                                            idx: number
+                                          ) => (
+                                            <div
+                                              key={idx}
+                                              className="flex items-center gap-2 text-[10px] font-mono text-cyan-400 bg-cyan-400/5 px-2 py-1 rounded border border-cyan-400/10"
+                                            >
+                                              <FileIcon className="w-3 h-3" />
+                                              {loc.path}
+                                              {loc.line && (
+                                                <span className="text-slate-600">
+                                                  :L{loc.line}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )
                                         )}
-                                        {issue.file2 && (
-                                          <div className="flex items-center gap-2 text-[10px] font-mono text-cyan-400 bg-cyan-400/5 px-2 py-1 rounded border border-cyan-400/10">
-                                            <FileIcon className="w-3 h-3" />
-                                            Match: {issue.file2}
-                                          </div>
-                                        )}
-                                        {issue.file && !issue.file1 && (
-                                          <div className="flex items-center gap-2 text-[10px] font-mono text-cyan-400 bg-cyan-400/5 px-2 py-1 rounded border border-cyan-400/10">
-                                            <FileIcon className="w-3 h-3" />
-                                            {issue.file}
-                                            {issue.line && (
-                                              <span className="text-slate-600">
-                                                :L{issue.line}
-                                              </span>
-                                            )}
-                                          </div>
-                                        )}
+
                                         {issue.similarity && (
                                           <div className="text-[10px] font-bold text-emerald-400 bg-emerald-400/5 px-2 py-1 rounded border border-emerald-400/10">
                                             {(issue.similarity * 100).toFixed(
