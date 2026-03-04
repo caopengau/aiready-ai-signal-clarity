@@ -1031,7 +1031,7 @@ function RepoCard({
         </div>
 
         {analysis && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Link href={`/dashboard/repo/${repo.id}`}>
               <motion.button
                 whileHover={{ scale: 1.01 }}
@@ -1048,7 +1048,7 @@ function RepoCard({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onViewTrends}
-                className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold rounded-lg hover:bg-indigo-500/20 transition-all border border-indigo-500/30"
+                className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-500/10 text-indigo-400 text-xs font-bold rounded-lg hover:bg-indigo-500/20 transition-all border border-indigo-500/30"
               >
                 <TrendingUpIcon className="w-3.5 h-3.5" />
                 Trends
@@ -1060,7 +1060,7 @@ function RepoCard({
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-full flex items-center justify-center gap-2 px-3 py-2 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold rounded-lg hover:bg-cyan-500/20 transition-all border border-cyan-500/30"
+                  className="w-full h-full flex items-center justify-center gap-2 px-3 py-2 bg-cyan-500/10 text-cyan-400 text-xs font-bold rounded-lg hover:bg-cyan-500/20 transition-all border border-cyan-500/30"
                 >
                   <RocketIcon className="w-3.5 h-3.5" />
                   Map
