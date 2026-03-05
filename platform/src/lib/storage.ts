@@ -318,77 +318,24 @@ export function normalizeReport(raw: any, force = false): AnalysisData {
     for (const item of scoring.breakdown) {
       const platformKey = toolMappings[item.toolName];
       if (platformKey) {
-        // Collect technical issues/details for this tool
-        // Unified details extraction with robust key mapping
+        // Generic tool name to camelCase key mapping (e.g. pattern-detect -> patternDetect)
+        const resultKey = item.toolName
+          .split('-')
+          .map((word: string, index: number) =>
+            index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
+          )
+          .join('');
+
+        const toolData = raw[resultKey];
         let details: any[] = [];
 
-        // Manual mappings for hub tools that don't follow generic patterns
-        if (
-          item.toolName === 'pattern-detect' &&
-          Array.isArray(raw.duplicates)
-        ) {
-          details = raw.duplicates;
-        } else if (
-          item.toolName === 'context-analyzer' &&
-          Array.isArray(raw.context)
-        ) {
-          details = raw.context;
-        } else if (
-          item.toolName === 'consistency' &&
-          Array.isArray(raw.consistency?.results)
-        ) {
-          details = raw.consistency.results.flatMap((r: any) => r.issues || []);
-        } else if (
-          item.toolName === 'ai-signal-clarity' &&
-          Array.isArray(raw.aiSignalClarity?.results)
-        ) {
-          details = raw.aiSignalClarity.results.flatMap(
-            (r: any) => r.issues || []
-          );
-        } else if (
-          item.toolName === 'agent-grounding' &&
-          Array.isArray(raw.grounding?.issues)
-        ) {
-          details = raw.grounding.issues;
-        } else if (
-          item.toolName === 'testability' &&
-          Array.isArray(raw.testability?.issues)
-        ) {
-          details = raw.testability.issues;
-        } else if (
-          item.toolName === 'doc-drift' &&
-          Array.isArray(raw.docDrift?.issues)
-        ) {
-          details = raw.docDrift.issues;
-        } else if (
-          item.toolName === 'dependency-health' &&
-          Array.isArray(raw.deps?.issues)
-        ) {
-          details = raw.deps.issues;
-        } else if (
-          item.toolName === 'change-amplification' &&
-          Array.isArray(raw.changeAmplification?.results)
-        ) {
-          details = raw.changeAmplification.results.flatMap(
-            (r: any) => r.issues || []
-          );
-        } else {
-          // Generic kebab-to-camel mapping for spokes as fallback
-          const resultKey = item.toolName
-            .split('-')
-            .map((word: string, index: number) =>
-              index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
-            )
-            .join('')
-            .replace('depsHealth', 'deps'); // Special case for legacy deps naming
-
-          const toolData = raw[resultKey];
-          if (toolData) {
-            if (Array.isArray(toolData.issues)) {
-              details = toolData.issues;
-            } else if (Array.isArray(toolData.results)) {
-              details = toolData.results.flatMap((r: any) => r.issues || []);
-            }
+        if (toolData) {
+          // Every spoke now follows SpokeOutput contract: { results: [], summary: {} }
+          if (Array.isArray(toolData.results)) {
+            details = toolData.results;
+          } else if (Array.isArray(toolData)) {
+            // Fallback for tools that directly return an array
+            details = toolData;
           }
         }
 
