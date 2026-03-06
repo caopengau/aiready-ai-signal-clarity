@@ -130,10 +130,23 @@ export async function analyzeUnified(
       );
       result.summary.totalIssues += issueCount;
 
-      // Backward compatibility fallbacks
-      if (provider.id === ToolName.PatternDetect) result.patternDetect = output;
-      if (provider.id === ToolName.ContextAnalyzer)
-        result.contextAnalyzer = output;
+      // Robust backward compatibility fallbacks
+      // 1. Add all aliases as keys (e.g., 'patterns', 'context', 'consistency')
+      if (provider.alias && Array.isArray(provider.alias)) {
+        for (const alias of provider.alias) {
+          if (!result[alias]) {
+            (result as any)[alias] = output;
+          }
+        }
+      }
+
+      // 2. Add camelCase version of canonical ID (e.g., 'patternDetect', 'contextAnalyzer')
+      const camelCaseId = provider.id.replace(/-([a-z])/g, (g) =>
+        g[1].toUpperCase()
+      );
+      if (camelCaseId !== provider.id && !result[camelCaseId]) {
+        (result as any)[camelCaseId] = output;
+      }
     } catch (err) {
       console.error(`❌ Error running tool '${provider.id}':`, err);
     }
