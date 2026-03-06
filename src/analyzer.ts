@@ -1,4 +1,4 @@
-import { calculateDependencyHealth } from '@aiready/core';
+import { calculateDependencyHealth, Severity, IssueType } from '@aiready/core';
 import type { DepsOptions, DepsReport, DepsIssue } from './types';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -47,8 +47,8 @@ export async function analyzeDeps(options: DepsOptions): Promise<DepsReport> {
         ) {
           deprecatedPackages++;
           issues.push({
-            type: 'dependency-health',
-            severity: 'major',
+            type: IssueType.DependencyHealth,
+            severity: Severity.Major,
             message: `Dependency '${name}' is known to be deprecated. AI assistants may use outdated APIs.`,
             location: { file: packageJsonPath, line: 1 },
           });
@@ -58,8 +58,8 @@ export async function analyzeDeps(options: DepsOptions): Promise<DepsReport> {
         if (major === 0) {
           outdatedPackages++;
           issues.push({
-            type: 'dependency-health',
-            severity: 'minor',
+            type: IssueType.DependencyHealth,
+            severity: Severity.Minor,
             message: `Dependency '${name}' (${version}) is pre-v1. APIs often unstable and hard for AI to predict.`,
             location: { file: packageJsonPath, line: 1 },
           });

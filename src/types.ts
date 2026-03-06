@@ -1,4 +1,4 @@
-import type { ScanOptions, Issue } from '@aiready/core';
+import type { ScanOptions, Issue, IssueType } from '@aiready/core';
 
 export interface DepsOptions extends ScanOptions {
   /** The year the AI model was trained. Defaults to 2023. */
@@ -6,7 +6,7 @@ export interface DepsOptions extends ScanOptions {
 }
 
 export interface DepsIssue extends Issue {
-  type: 'dependency-health';
+  type: IssueType.DependencyHealth;
 }
 
 export interface DepsReport {
