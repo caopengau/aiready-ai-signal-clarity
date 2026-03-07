@@ -13,14 +13,21 @@ import {
 import type { AIReadyConfig } from '@aiready/core';
 import { ToolName } from '@aiready/core/client';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { AlertTriangle } from 'lucide-react';
 
 interface Props {
   repoId: string;
   initialSettings: AIReadyConfig | null;
   onSave: (settings: AIReadyConfig | null) => Promise<void>;
+  fileCount?: number;
 }
 
-export function ScanConfigForm({ repoId, initialSettings, onSave }: Props) {
+export function ScanConfigForm({
+  repoId,
+  initialSettings,
+  onSave,
+  fileCount = 0,
+}: Props) {
   const [confirmData, setConfirmData] = useState<{
     type: 'node_modules' | 'approx' | null;
     title: string;
@@ -139,6 +146,47 @@ export function ScanConfigForm({ repoId, initialSettings, onSave }: Props) {
   const hasChanges = useMemo(() => {
     return JSON.stringify(settings) !== JSON.stringify(mergedInitialSettings);
   }, [settings, mergedInitialSettings]);
+
+  const estimatedTime = useMemo(() => {
+    if (fileCount === 0) return null;
+
+    let seconds = 15; // Base overhead (clone + init)
+    const activeTools = settings.scan?.tools || [];
+
+    // 1. Core file scanning & parsing (0.05s per file)
+    seconds += fileCount * 0.05;
+
+    // 2. Pattern Detection (The most expensive O(N^2) tool)
+    if (activeTools.includes(ToolName.PatternDetect)) {
+      const blocks = fileCount * 5;
+      const totalComparisons = (blocks * blocks) / 2;
+      const approx = settings.tools?.[ToolName.PatternDetect]?.approx !== false;
+      const effectiveComparisons = approx
+        ? totalComparisons / 15
+        : totalComparisons;
+
+      // ~50,000 comparisons per second
+      seconds += effectiveComparisons / 50000;
+    }
+
+    // 3. Context Analyzer (Recursive exploration)
+    if (activeTools.includes(ToolName.ContextAnalyzer)) {
+      const depth = settings.tools?.[ToolName.ContextAnalyzer]?.maxDepth || 5;
+      // Exponential increase with depth
+      const depthFactor = Math.pow(1.3, depth);
+      seconds += fileCount * 0.08 * depthFactor;
+    }
+
+    // 4. Other tools (Generally O(N))
+    const otherToolsCount = activeTools.filter(
+      (t) => t !== ToolName.PatternDetect && t !== ToolName.ContextAnalyzer
+    ).length;
+    seconds += fileCount * 0.03 * otherToolsCount;
+
+    return Math.round(seconds);
+  }, [settings, fileCount]);
+
+  const timeWarning = estimatedTime && estimatedTime > 600; // > 10 minutes
 
   const handleToggleTool = (tool: string) => {
     const tools = settings.scan?.tools || [];
@@ -1161,40 +1209,119 @@ export function ScanConfigForm({ repoId, initialSettings, onSave }: Props) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between pb-10">
-        <div className="flex items-center gap-4 text-slate-500 text-xs">
-          <ChartIcon className="w-4 h-4" />
-          <p>
-            {hasChanges
-              ? 'You have unsaved changes to your scan strategy.'
-              : 'These settings will be applied to the next scan of this repository.'}
-          </p>
+      <div className="flex flex-col gap-6 pb-10">
+        {estimatedTime !== null && (
+          <div
+            className={`p-6 rounded-3xl border transition-all ${
+              timeWarning
+                ? 'bg-red-500/10 border-red-500/30'
+                : 'bg-slate-900/50 border-slate-800'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`p-2 rounded-xl border ${
+                    timeWarning
+                      ? 'bg-red-500/20 border-red-500/30 text-red-500'
+                      : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500'
+                  }`}
+                >
+                  <RefreshCwIcon
+                    className={`w-4 h-4 ${saving ? 'animate-spin' : ''}`}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold uppercase tracking-widest">
+                    Estimated Scan Time
+                  </h4>
+                  <p className="text-[10px] text-slate-500 uppercase">
+                    Based on {fileCount} files and selected strategy
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span
+                  className={`text-2xl font-black font-mono ${
+                    timeWarning ? 'text-red-500' : 'text-cyan-500'
+                  }`}
+                >
+                  {Math.floor(estimatedTime / 60)}:
+                  {(estimatedTime % 60).toString().padStart(2, '0')}
+                </span>
+                <span className="text-[10px] block text-slate-500 font-bold uppercase">
+                  Minutes
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-4">
+              <div
+                className={`h-full transition-all duration-500 ${
+                  timeWarning ? 'bg-red-500' : 'bg-cyan-500'
+                }`}
+                style={{
+                  width: `${Math.min(100, (estimatedTime / 900) * 100)}%`,
+                }}
+              />
+            </div>
+
+            {timeWarning ? (
+              <div className="flex items-start gap-3 p-3 bg-red-500/20 rounded-xl border border-red-500/30 animate-pulse">
+                <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-red-200 leading-relaxed">
+                  <span className="font-bold block mb-1">TIMEOUT RISK</span>
+                  This configuration might exceed the 15-minute system limit.
+                  Consider enabling{' '}
+                  <span className="font-bold">Approximate Matching</span> or
+                  reducing <span className="font-bold">Context Depth</span> to
+                  speed up the scan.
+                </p>
+              </div>
+            ) : (
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                Scan time is estimated and may vary based on file complexity and
+                system load. A 10-minute safe buffer is recommended.
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-slate-500 text-xs">
+            <ChartIcon className="w-4 h-4" />
+            <p>
+              {hasChanges
+                ? 'You have unsaved changes to your scan strategy.'
+                : 'These settings will be applied to the next scan of this repository.'}
+            </p>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving || !hasChanges}
+            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all shadow-xl ${
+              success
+                ? 'bg-green-500 text-white shadow-green-500/20'
+                : !hasChanges
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                  : 'bg-cyan-500 text-black hover:bg-cyan-400 shadow-cyan-500/20 active:scale-95'
+            } disabled:opacity-50`}
+          >
+            {saving ? (
+              <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+            ) : success ? (
+              <>
+                <RefreshCwIcon className="w-5 h-5" />
+                Settings Updated
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-5 h-5" />
+                Save Strategy
+              </>
+            )}
+          </button>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving || !hasChanges}
-          className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all shadow-xl ${
-            success
-              ? 'bg-green-500 text-white shadow-green-500/20'
-              : !hasChanges
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                : 'bg-cyan-500 text-black hover:bg-cyan-400 shadow-cyan-500/20 active:scale-95'
-          } disabled:opacity-50`}
-        >
-          {saving ? (
-            <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-          ) : success ? (
-            <>
-              <RefreshCwIcon className="w-5 h-5" />
-              Settings Updated
-            </>
-          ) : (
-            <>
-              <SaveIcon className="w-5 h-5" />
-              Save Strategy
-            </>
-          )}
-        </button>
       </div>
 
       <ConfirmationModal

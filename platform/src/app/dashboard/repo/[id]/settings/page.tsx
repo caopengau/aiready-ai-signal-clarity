@@ -29,6 +29,9 @@ export default async function RepoSettingsPage({ params }: Props) {
   }
 
   const teams = await listUserTeams(userId);
+  const { getLatestAnalysis } = await import('@/lib/db');
+  const latestAnalysis = await getLatestAnalysis(id);
+  const fileCount = latestAnalysis?.summary?.totalFiles || 0;
 
   async function updateSettings(settings: any | null) {
     'use server';
@@ -63,6 +66,7 @@ export default async function RepoSettingsPage({ params }: Props) {
           repoId={repo.id}
           initialSettings={repo.scanConfig || null}
           onSave={updateSettings}
+          fileCount={fileCount}
         />
       </div>
     </PlatformShell>
