@@ -13,10 +13,17 @@ export type { PatternType, DuplicatePattern };
 /**
  * Standardize code for similarity comparison
  */
-function normalizeCode(code: string): string {
-  return code
-    .replace(/\/\/.*/g, '') // remove single line comments
-    .replace(/\/\*[\s\S]*?\*\//g, '') // remove block comments
+function normalizeCode(code: string, isPython: boolean = false): string {
+  let normalized = code;
+  if (isPython) {
+    normalized = normalized.replace(/#.*/g, ''); // remove python comments
+  } else {
+    normalized = normalized
+      .replace(/\/\/.*/g, '') // remove single line comments
+      .replace(/\/\*[\s\S]*?\*\//g, ''); // remove block comments
+  }
+
+  return normalized
     .replace(/['"`]/g, '"') // unify quotes
     .replace(/\s+/g, ' ') // unify whitespace
     .trim()
@@ -27,6 +34,11 @@ function normalizeCode(code: string): string {
  * Split file content into logical blocks (functions, classes, methods)
  */
 function extractBlocks(file: string, content: string): CodeBlock[] {
+  const isPython = file.toLowerCase().endsWith('.py');
+  if (isPython) {
+    return extractBlocksPython(file, content);
+  }
+
   const blocks: CodeBlock[] = [];
   const lines = content.split('\n');
 
@@ -93,6 +105,61 @@ function extractBlocks(file: string, content: string): CodeBlock[] {
       code: blockCode,
       tokens,
       patternType: inferPatternType(type, name),
+    });
+  }
+
+  return blocks;
+}
+
+/**
+ * Python-specific block extraction based on indentation
+ */
+function extractBlocksPython(file: string, content: string): CodeBlock[] {
+  const blocks: CodeBlock[] = [];
+  const lines = content.split('\n');
+
+  // Python block regex: def, class, async def
+  const blockRegex = /^\s*(?:async\s+)?(def|class)\s+([a-zA-Z0-9_]+)/gm;
+
+  let match;
+  while ((match = blockRegex.exec(content)) !== null) {
+    const startLinePos = content.substring(0, match.index).split('\n').length;
+    const startLineIdx = startLinePos - 1;
+    const initialIndent = lines[startLineIdx].search(/\S/);
+
+    let endLineIdx = startLineIdx;
+
+    // Find end of block by indentation
+    for (let i = startLineIdx + 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim().length === 0) {
+        // Just include blank lines in the block for now
+        endLineIdx = i;
+        continue;
+      }
+
+      const currentIndent = line.search(/\S/);
+      if (currentIndent <= initialIndent) {
+        break;
+      }
+      endLineIdx = i;
+    }
+
+    // Trim trailing empty lines from the block
+    while (endLineIdx > startLineIdx && lines[endLineIdx].trim().length === 0) {
+      endLineIdx--;
+    }
+
+    const blockCode = lines.slice(startLineIdx, endLineIdx + 1).join('\n');
+    const tokens = estimateTokens(blockCode);
+
+    blocks.push({
+      file,
+      startLine: startLinePos,
+      endLine: endLineIdx + 1,
+      code: blockCode,
+      tokens,
+      patternType: inferPatternType(match[1], match[2]),
     });
   }
 
@@ -182,7 +249,8 @@ export async function detectDuplicatePatterns(
     }
 
     const b1 = allBlocks[i];
-    const norm1 = normalizeCode(b1.code);
+    const isPython1 = b1.file.toLowerCase().endsWith('.py');
+    const norm1 = normalizeCode(b1.code, isPython1);
 
     for (let j = i + 1; j < allBlocks.length; j++) {
       comparisons++;
@@ -190,7 +258,8 @@ export async function detectDuplicatePatterns(
 
       if (b1.file === b2.file) continue;
 
-      const norm2 = normalizeCode(b2.code);
+      const isPython2 = b2.file.toLowerCase().endsWith('.py');
+      const norm2 = normalizeCode(b2.code, isPython2);
       const sim = calculateSimilarity(norm1, norm2);
 
       if (sim >= minSimilarity) {
