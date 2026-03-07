@@ -2,9 +2,15 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlatformShell from '@/components/PlatformShell';
-import { AlertCircleIcon } from '@/components/Icons';
+import {
+  AlertCircleIcon,
+  InfoIcon,
+  SettingsIcon,
+  FileIcon,
+} from '@/components/Icons';
 import type { Repository, Team, TeamMember } from '@/lib/db';
 import type { AnalysisData } from '@/lib/storage';
 import { ToolName, FRIENDLY_TOOL_NAMES } from '@aiready/core/client';
@@ -12,6 +18,7 @@ import { RepoHeader } from './components/RepoHeader';
 import { RepoDimensions } from './components/RepoDimensions';
 import { IssueFeed } from './components/IssueFeed';
 import { MethodologyPanel } from '@/components/MethodologyPanel';
+import CodeBlock from '@/components/CodeBlock';
 import { metrics } from '@/app/metrics/constants';
 
 interface Props {
@@ -42,6 +49,7 @@ function RepoDetailContent({ repo, user, teams, overallScore }: Props) {
   }>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [showMethodology, setShowMethodology] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
   const ITEMS_PER_PAGE = 25;
 
   const toggleIssue = (index: number) => {
@@ -217,7 +225,18 @@ function RepoDetailContent({ repo, user, teams, overallScore }: Props) {
       activePage="repo"
     >
       <div className="p-4 sm:p-6 lg:p-8 space-y-8 text-white">
-        <RepoHeader repo={repo} analysis={analysis} />
+        <div className="flex items-start justify-between">
+          <RepoHeader repo={repo} analysis={analysis} />
+          {analysis && (
+            <button
+              onClick={() => setShowConfig(true)}
+              className="mt-12 flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-cyan-400 rounded-xl border border-slate-700/50 transition-all text-xs font-bold uppercase tracking-widest"
+            >
+              <InfoIcon className="w-3.5 h-3.5" />
+              View Scan Config
+            </button>
+          )}
+        </div>
 
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4">
@@ -337,6 +356,95 @@ function RepoDetailContent({ repo, user, teams, overallScore }: Props) {
             </div>
           )
         )}
+
+        <AnimatePresence>
+          {showConfig && analysis && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowConfig(false)}
+                className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
+                      <SettingsIcon className="w-5 h-5 text-cyan-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">Scan Configuration</h3>
+                      <p className="text-xs text-slate-500 uppercase tracking-widest font-black mt-0.5">
+                        Used for scan on{' '}
+                        {new Date(analysis.metadata.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowConfig(false)}
+                    className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-500 hover:text-white"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-6 max-h-[60vh] overflow-y-auto">
+                  <div className="space-y-4">
+                    <p className="text-sm text-slate-400">
+                      This configuration was active at the time of the scan. You
+                      can adjust future scan parameters in the
+                      <Link
+                        href={`/dashboard/repo/${repo.id}/settings`}
+                        className="text-cyan-400 hover:underline mx-1"
+                      >
+                        Repo Settings
+                      </Link>
+                      page to uplift standards or reduce noise.
+                    </p>
+                    <div className="rounded-2xl overflow-hidden border border-slate-800">
+                      <CodeBlock lang="json">
+                        {JSON.stringify(
+                          analysis.summary.config ||
+                            analysis.metadata.config ||
+                            (analysis.rawOutput as any)?.summary?.config ||
+                            (analysis.rawOutput as any)?.config ||
+                            {},
+                          null,
+                          2
+                        )}
+                      </CodeBlock>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 bg-slate-950/50 border-t border-slate-800 flex justify-end">
+                  <button
+                    onClick={() => setShowConfig(false)}
+                    className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors font-bold text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </PlatformShell>
   );

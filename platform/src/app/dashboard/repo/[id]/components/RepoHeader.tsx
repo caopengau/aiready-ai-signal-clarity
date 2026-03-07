@@ -1,7 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { FileIcon, PlayIcon, RobotIcon } from '@/components/Icons';
+import {
+  FileIcon,
+  PlayIcon,
+  RobotIcon,
+  SettingsIcon,
+} from '@/components/Icons';
 import {
   scoreColor,
   scoreBg,
@@ -40,11 +45,11 @@ export function RepoHeader({ repo, analysis }: RepoHeaderProps) {
             Back to Dashboard
           </Link>
           <Link
-            href={`/map?repoId=${repo.id}`}
+            href={`/dashboard/repo/${repo.id}/settings`}
             className="text-cyan-400 text-xs font-black uppercase tracking-widest hover:text-cyan-300 transition-colors flex items-center gap-2"
           >
-            <RobotIcon className="w-3.5 h-3.5" />
-            View Codebase Map
+            <SettingsIcon className="w-3.5 h-3.5" />
+            Scan Strategy
           </Link>
         </div>
         <div className="space-y-1">

@@ -127,3 +127,21 @@ export async function setRepositoryScanning(
     })
   );
 }
+export async function updateRepositoryConfig(
+  repoId: string,
+  config: any | null
+): Promise<void> {
+  const TABLE_NAME = getTableName();
+  const now = new Date().toISOString();
+  await doc.send(
+    new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: { PK: `REPO#${repoId}`, SK: '#METADATA' },
+      UpdateExpression: 'SET scanConfig = :c, updatedAt = :t',
+      ExpressionAttributeValues: {
+        ':c': config,
+        ':t': now,
+      },
+    })
+  );
+}

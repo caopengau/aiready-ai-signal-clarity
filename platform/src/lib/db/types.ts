@@ -1,5 +1,5 @@
-// Types for DynamoDB entities
 import { AnalysisStatus, Severity } from '@aiready/core/client';
+import type { AIReadyConfig } from '@aiready/core';
 
 export interface User {
   id: string;
@@ -53,6 +53,7 @@ export interface Repository {
   lastCommitHash?: string;
   createdAt: string;
   updatedAt: string;
+  scanConfig?: AIReadyConfig;
 }
 
 export interface Analysis {

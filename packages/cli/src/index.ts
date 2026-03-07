@@ -28,6 +28,7 @@ export type { ToolScoringOutput, ScoringResult };
 export interface UnifiedAnalysisOptions extends ScanOptions {
   rootDir: string;
   tools?: string[];
+  toolConfigs?: Record<string, any>;
   minSimilarity?: number;
   minLines?: number;
   maxCandidatesPerBlock?: number;
@@ -55,6 +56,7 @@ export interface UnifiedAnalysisResult {
     toolsRun: string[];
     executionTime: number;
     config?: any;
+    toolConfigs?: Record<string, any>;
   };
   scoring?: ScoringResult;
 }
@@ -108,7 +110,8 @@ export async function analyzeUnified(
       totalFiles: 0,
       toolsRun: [],
       executionTime: 0,
-      config: options, // Added as per instruction
+      config: options,
+      toolConfigs: {},
     },
   };
 
@@ -153,8 +156,9 @@ export async function analyzeUnified(
       delete (sanitizedConfig as any).onProgress;
       delete (sanitizedConfig as any).progressCallback;
 
-      const output = await provider.analyze({
+      const toolOptions = {
         ...options,
+        ...(options.toolConfigs?.[provider.id] || {}),
         onProgress: (processed: number, total: number, message: string) => {
           if (options.progressCallback) {
             options.progressCallback({
@@ -165,7 +169,9 @@ export async function analyzeUnified(
             });
           }
         },
-      });
+      };
+
+      const output = await provider.analyze(toolOptions);
 
       // Inject configuration into metadata for auditing and fine-tuning
       if (output.metadata) {
@@ -178,6 +184,13 @@ export async function analyzeUnified(
 
       result[provider.id] = output;
       result.summary.toolsRun.push(provider.id);
+
+      // Collect tool-specific configuration for the audit log
+      if (output.summary?.config) {
+        result.summary.toolConfigs![provider.id] = output.summary.config;
+      } else if (output.metadata?.config) {
+        result.summary.toolConfigs![provider.id] = output.metadata.config;
+      }
 
       // Track total files analyzed across all tools
       const toolFiles =
@@ -213,6 +226,12 @@ export async function analyzeUnified(
       console.error(`❌ Error running tool '${provider.id}':`, err);
     }
   }
+
+  // Finalize configuration for metadata
+  result.summary.config = {
+    ...options,
+    toolConfigs: result.summary.toolConfigs,
+  };
 
   result.summary.executionTime = Date.now() - startTime;
   return result;

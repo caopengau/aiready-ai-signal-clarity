@@ -43,6 +43,7 @@ export interface AnalysisData {
     commit: string;
     timestamp: string;
     toolVersion: string;
+    config?: any;
   };
   summary: {
     aiReadinessScore: number;
@@ -50,6 +51,7 @@ export interface AnalysisData {
     totalIssues: number;
     criticalIssues: number;
     warnings: number;
+    config?: any;
   };
   breakdown: Record<
     string,
@@ -503,6 +505,7 @@ export function normalizeReport(
       commit: repo.commit || 'unknown',
       timestamp: scoring.timestamp || new Date().toISOString(),
       toolVersion: repo.version || '0.1.0',
+      config: metadata.config || summary.config || source.config,
     },
     summary: {
       aiReadinessScore,
@@ -510,6 +513,7 @@ export function normalizeReport(
       totalIssues: summary.totalIssues || 0,
       criticalIssues: summary.criticalIssues || 0,
       warnings: summary.warnings || 0,
+      config: summary.config || source.config || metadata.config,
     },
     breakdown,
     rawOutput: source,

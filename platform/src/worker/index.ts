@@ -91,7 +91,7 @@ export async function handler(event: SQSEvent) {
 
       const analysisResults = await analyzeUnified({
         rootDir: tempDir,
-        tools: [
+        tools: repo.scanConfig?.scan?.tools || [
           'patterns',
           'context',
           'consistency',
@@ -102,6 +102,8 @@ export async function handler(event: SQSEvent) {
           'doc-drift',
           'deps-health',
         ],
+        toolConfigs: repo.scanConfig?.tools,
+        ...(repo.scanConfig?.scan || {}),
         progressCallback: (event: any) => {
           if (event.message) {
             console.log(`[ScanWorker] [${event.tool}] ${event.message}`);
