@@ -9,6 +9,12 @@
 
 AI models often suffer from "semantic confusion" when multiple variants of the same logic exist in the codebase. The **Pattern Detect** analyzer helps you identify these duplicates and consolidate them into reusable components.
 
+### Language Support
+
+- **Full Support:** TypeScript, JavaScript, Python, Java, Go, C#
+- **Capabilities:** Semantic duplicate detection, logic fragmentation, refactoring suggestions.
+  toxicology
+
 ## 🏛️ Architecture
 
 ```
