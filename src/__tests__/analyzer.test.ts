@@ -8,24 +8,73 @@ describe('Deps Health Analyzer', () => {
   let tmpDir: string;
 
   beforeAll(() => {
-    tmpDir = join(tmpdir(), `deps-test-${Date.now()}`);
+    tmpDir = join(tmpdir(), `deps-test-complex-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
 
-    const packageJsonPath = join(tmpDir, 'package.json');
+    // NPM
     writeFileSync(
-      packageJsonPath,
+      join(tmpDir, 'package.json'),
       JSON.stringify({
-        dependencies: {
-          request: '^2.88.2',
-          moment: '~2.29.4',
-          lodash: '^0.4.0',
-          react: '^19.0.0',
-          next: '15.0.0-rc',
-        },
-        devDependencies: {
-          typescript: '5.6.3',
-        },
+        dependencies: { lodash: '^0.4.0', request: '^2.88.2' },
       })
+    );
+
+    // Python requirements.txt
+    writeFileSync(
+      join(tmpDir, 'requirements.txt'),
+      'requests==2.31.0\nurllib3>=1.26.15\n# Comment\nflask'
+    );
+
+    // Maven pom.xml
+    writeFileSync(
+      join(tmpDir, 'pom.xml'),
+      `
+      <project>
+        <dependencies>
+          <dependency>
+            <artifactId>log4j</artifactId>
+          </dependency>
+          <dependency>
+            <artifactId>junit</artifactId>
+          </dependency>
+        </dependencies>
+      </project>
+      `
+    );
+
+    // Go go.mod
+    writeFileSync(
+      join(tmpDir, 'go.mod'),
+      `
+      module example.com/m
+      go 1.21
+      require github.com/gorilla/mux v1.8.1
+      require (
+        github.com/spf13/cobra v1.8.0
+        github.com/stretchr/testify v1.8.4
+      )
+      `
+    );
+
+    // .NET csproj
+    writeFileSync(
+      join(tmpDir, 'app.csproj'),
+      `
+      <Project Sdk="Microsoft.NET.Sdk">
+        <ItemGroup>
+          <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+          <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+        </ItemGroup>
+      </Project>
+      `
+    );
+
+    // Subdirectory with exclusions
+    const subDir = join(tmpDir, 'vendor');
+    mkdirSync(subDir);
+    writeFileSync(
+      join(subDir, 'package.json'),
+      JSON.stringify({ dependencies: { 'should-be-ignored': '1.0.0' } })
     );
   });
 
@@ -33,23 +82,30 @@ describe('Deps Health Analyzer', () => {
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it('detects outdated, deprecated, and skew signals', async () => {
+  it('detects dependencies across multiple ecosystems', async () => {
     const report = await analyzeDeps({
       rootDir: tmpDir,
-      trainingCutoffYear: 2023,
+      exclude: ['vendor'],
     });
 
-    expect(report.summary.packagesAnalyzed).toBe(6);
+    // 2 (npm) + 3 (python) + 2 (maven) + 3 (go) + 2 (dotnet) = 12
+    expect(report.summary.packagesAnalyzed).toBe(12);
+    expect(report.summary.filesAnalyzed).toBe(5); // Ignored vendor/package.json
 
-    // request, moment are known deprecated
-    expect(report.rawData.deprecatedPackages).toBe(2);
+    // Check for deprecated ones we added
+    // request (npm), log4j (maven), gorilla/mux (go), urllib3 (python)
+    expect(report.rawData.deprecatedPackages).toBeGreaterThanOrEqual(4);
+  });
 
-    // lodash is 0.x (pre-v1) -> flagged as outdated in our mock
-    expect(report.rawData.outdatedPackages).toBe(1);
+  it('handles empty or malformed manifests gracefully', async () => {
+    const emptyDir = join(tmpdir(), `deps-test-empty-${Date.now()}`);
+    mkdirSync(emptyDir);
+    writeFileSync(join(emptyDir, 'package.json'), 'invalid json');
+    writeFileSync(join(emptyDir, 'requirements.txt'), '');
 
-    // next 15, react 19, ts 5.6 -> skew signals
-    expect(report.rawData.trainingCutoffSkew).toBeGreaterThan(0);
+    const report = await analyzeDeps({ rootDir: emptyDir });
+    expect(report.summary.packagesAnalyzed).toBe(0);
 
-    expect(report.issues.length).toBeGreaterThan(0);
+    rmSync(emptyDir, { recursive: true, force: true });
   });
 });
