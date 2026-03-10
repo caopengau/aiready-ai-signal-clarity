@@ -71,10 +71,22 @@ export function TrendCharts({
     dataByType.forEach((typeData, type) => {
       g.append('path')
         .datum(typeData)
+        .attr('class', `line line-${type.replace(/\s+/g, '-')}`)
         .attr('fill', 'none')
         .attr('stroke', color(type))
         .attr('stroke-width', 2)
         .attr('d', line)
+        .style('transition', 'opacity 0.2s ease')
+        .on('mouseover', function () {
+          g.selectAll('.line').style('opacity', 0.1);
+          g.selectAll('.legend-item').style('opacity', 0.1);
+          d3.select(this).style('opacity', 1).attr('stroke-width', 3);
+          g.select(`.legend-${type.replace(/\s+/g, '-')}`).style('opacity', 1);
+        })
+        .on('mouseout', function () {
+          g.selectAll('.line').style('opacity', 1).attr('stroke-width', 2);
+          g.selectAll('.legend-item').style('opacity', 1);
+        })
         .append('title')
         .text(type);
     });
@@ -89,7 +101,22 @@ export function TrendCharts({
       .data(Array.from(dataByType.keys()))
       .enter()
       .append('g')
-      .attr('transform', (d, i) => `translate(${width + 10},${i * 20})`);
+      .attr('class', (d) => `legend-item legend-${d.replace(/\s+/g, '-')}`)
+      .attr('transform', (d, i) => `translate(${width + 10},${i * 20})`)
+      .style('cursor', 'pointer')
+      .style('transition', 'opacity 0.2s ease')
+      .on('mouseover', function (event, d) {
+        g.selectAll('.line').style('opacity', 0.1);
+        g.selectAll('.legend-item').style('opacity', 0.1);
+        g.select(`.line-${d.replace(/\s+/g, '-')}`)
+          .style('opacity', 1)
+          .attr('stroke-width', 3);
+        d3.select(this).style('opacity', 1);
+      })
+      .on('mouseout', function (event, d) {
+        g.selectAll('.line').style('opacity', 1).attr('stroke-width', 2);
+        g.selectAll('.legend-item').style('opacity', 1);
+      });
 
     legend
       .append('rect')
