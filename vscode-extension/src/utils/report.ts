@@ -182,6 +182,23 @@ export function countIssues(result: AIReadyResult): {
     });
   }
 
+  // Clarity (AI Signal Clarity)
+  const clarity =
+    (result as any)['ai-signal-clarity'] ||
+    (result as any)['ai-signal'] ||
+    (result as any)['aiSignalClarity'];
+  if (clarity && Array.isArray(clarity.results)) {
+    clarity.results.forEach((r: any) => {
+      if (Array.isArray(r.issues)) {
+        r.issues.forEach((issue: any) => {
+          const sev = issue.severity as keyof typeof counts;
+          counts[sev] = (counts[sev] || 0) + 1;
+          counts.total++;
+        });
+      }
+    });
+  }
+
   return counts;
 }
 
@@ -233,8 +250,23 @@ export function collectAllIssues(result: AIReadyResult): Issue[] {
 
   // Deps
   if (result.deps && Array.isArray(result.deps.issues)) {
-    result.deps.issues.forEach((issue: any) => {
+    result.deps.issues.forEach((issue) => {
       issues.push({ ...issue, tool: 'deps-health' });
+    });
+  }
+
+  // Clarity (AI Signal Clarity)
+  const clarity =
+    (result as any)['ai-signal-clarity'] ||
+    (result as any)['ai-signal'] ||
+    (result as any)['aiSignalClarity'];
+  if (clarity && Array.isArray(clarity.results)) {
+    clarity.results.forEach((r: any) => {
+      if (Array.isArray(r.issues)) {
+        r.issues.forEach((issue: any) => {
+          issues.push({ ...issue, tool: 'ai-signal-clarity' });
+        });
+      }
     });
   }
 
