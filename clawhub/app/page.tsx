@@ -33,7 +33,7 @@ export default function ClawHubPage() {
               <span className="text-xl font-bold tracking-tight leading-none glow-text">
                 ClawHub
               </span>
-              <span className="text-[8px] font-mono text-cyber-green uppercase tracking-[0.2em] mt-0.5">
+              <span className="text-[8px] font-mono text-cyber-purple uppercase tracking-[0.2em] mt-0.5">
                 Neural_Node_v1.0
               </span>
             </div>
@@ -64,9 +64,9 @@ export default function ClawHubPage() {
               >
                 <Code className="w-3 h-3" /> Source
               </Link>
-              <div className="flex items-center gap-2 px-3 py-2 bg-cyber-green/5 border border-cyber-green/20 rounded-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse" />
-                <span className="text-cyber-green text-[9px] font-black">
+              <div className="flex items-center gap-2 px-3 py-2 bg-cyber-blue/5 border border-cyber-blue/20 rounded-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyber-blue animate-pulse" />
+                <span className="text-cyber-blue text-[9px] font-black">
                   LINK_ACTIVE
                 </span>
               </div>
@@ -83,34 +83,34 @@ export default function ClawHubPage() {
             src="/hero.png"
             alt="Hero Background"
             fill
-            className="object-cover opacity-20 grayscale transition-opacity duration-1000 group-hover:opacity-30"
+            className="object-cover opacity-35 transition-opacity duration-1000"
             priority
           />
-          {/* Gradients to blend image */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0a0a0a_80%)]" />
+          {/* VIBRANT Blue/Purple Gradients to blend image */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,224,255,0.15)_0%,_#0a0a0a_90%)]" />
+          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-cyber-purple/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-cyber-blue/10 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2" />
+
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
         </div>
 
         <div className="container mx-auto px-4 text-center relative">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm border border-cyber-blue/20 bg-cyber-blue/5 text-cyber-blue text-[10px] font-mono uppercase tracking-[0.3em] mb-12 shadow-[0_0_20px_rgba(0,224,255,0.05)] backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm border border-cyber-purple/30 bg-cyber-purple/5 text-cyber-purple text-[10px] font-mono uppercase tracking-[0.3em] mb-12 shadow-[0_0_20px_rgba(188,0,255,0.1)] backdrop-blur-sm">
             <Activity className="w-3 h-3" />
             <span>Autonomous Infrastructure Synthesis</span>
           </div>
 
-          <h1 className="text-6xl md:text-9xl font-black tracking-tighter mb-10 bg-gradient-to-b from-white to-white/30 bg-clip-text text-transparent leading-[0.9]">
+          <h1 className="text-6xl md:text-9xl font-black tracking-tighter mb-10 bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-blue bg-clip-text text-transparent leading-[1.0] drop-shadow-[0_0_50px_rgba(0,224,255,0.3)]">
             Never-Dying,
             <br />
-            <span className="text-cyber-blue glow-text italic">
-              Self-Evolving
-            </span>{' '}
-            Stack
+            <span className="italic">Self-Evolving</span> Claw
           </h1>
 
-          <p className="text-xl text-zinc-300 max-w-3xl mx-auto mb-14 leading-relaxed font-light drop-shadow-lg">
+          <p className="text-xl text-zinc-300 max-w-3xl mx-auto mb-14 leading-relaxed font-light drop-shadow-xl">
             ClawHub is the world&apos;s first autonomous agentic system built on
             AWS Ion. It interprets intent, synthesizes infrastructure, and{' '}
-            <span className="text-cyber-green font-mono text-sm underline decoration-cyber-green/30 underline-offset-4">
+            <span className="text-cyber-blue font-mono text-sm underline decoration-cyber-blue/30 underline-offset-4">
               persists mutations
             </span>{' '}
             back to source control while you sleep.
@@ -174,8 +174,8 @@ export default function ClawHubPage() {
               </p>
             </div>
 
-            <div className="glass-card p-10 hover:border-cyber-green/30 transition-all group">
-              <div className="w-14 h-14 rounded-sm bg-cyber-green/10 flex items-center justify-center text-cyber-green mb-8 border border-cyber-green/20 group-hover:scale-110 transition-transform">
+            <div className="glass-card p-10 hover:border-cyber-purple/30 transition-all group">
+              <div className="w-14 h-14 rounded-sm bg-cyber-purple/10 flex items-center justify-center text-cyber-purple mb-8 border border-cyber-purple/20 group-hover:scale-110 transition-transform">
                 <ShieldCheck className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold mb-4 tracking-tight">
@@ -183,7 +183,7 @@ export default function ClawHubPage() {
               </h3>
               <p className="text-zinc-500 leading-relaxed text-sm">
                 Keep your neural weight in your own VPC. Deploy with strict{' '}
-                <span className="text-cyber-green">Recursion Guards</span> and
+                <span className="text-cyber-purple">Recursion Guards</span> and
                 Human-in-the-Loop context isolation for enterprise safety.
               </p>
             </div>
@@ -227,7 +227,7 @@ export default function ClawHubPage() {
                   {
                     label: 'EXECUTION_OPS',
                     desc: 'Coder implements & SST Ion deploys infra',
-                    color: 'cyber-green',
+                    color: 'cyber-blue',
                   },
                   {
                     label: 'GIT_PERSISTENCE',
@@ -268,7 +268,7 @@ export default function ClawHubPage() {
                   <div className="flex gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-red-500/50" />
                     <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
-                    <div className="w-2 h-2 rounded-full bg-cyber-green/50" />
+                    <div className="w-2 h-2 rounded-full bg-cyber-blue/50" />
                   </div>
                 </div>
                 <div className="space-y-3 leading-relaxed">
@@ -299,7 +299,7 @@ export default function ClawHubPage() {
                   </div>
                   <div className="text-zinc-600 font-bold">
                     [01:15:02]{' '}
-                    <span className="text-cyber-green uppercase">Sync:</span>{' '}
+                    <span className="text-cyber-blue uppercase">Sync:</span>{' '}
                     Committing success to origin/main
                   </div>
 
@@ -328,7 +328,7 @@ export default function ClawHubPage() {
       <section className="py-32" id="pricing">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20">
-            <div className="text-cyber-green font-mono text-[9px] uppercase tracking-[0.5em] mb-4">
+            <div className="text-cyber-purple font-mono text-[9px] uppercase tracking-[0.5em] mb-4">
               Sustenance_Model
             </div>
             <h2 className="text-5xl font-black mb-6 tracking-tighter italic">
@@ -439,10 +439,10 @@ export default function ClawHubPage() {
             </div>
           </div>
 
-          <div className="mt-20 glass-card p-8 max-w-2xl mx-auto border-cyber-green/20 bg-cyber-green/[0.02]">
+          <div className="mt-20 glass-card p-8 max-w-2xl mx-auto border-cyber-purple/20 bg-cyber-purple/[0.02]">
             <div className="flex items-center gap-3 mb-4">
-              <Activity className="w-4 h-4 text-cyber-green" />
-              <h5 className="font-mono text-[10px] font-black uppercase tracking-[0.4em] text-cyber-green">
+              <Activity className="w-4 h-4 text-cyber-purple" />
+              <h5 className="font-mono text-[10px] font-black uppercase tracking-[0.4em] text-cyber-purple">
                 The Evolution_Tax.cfg
               </h5>
             </div>

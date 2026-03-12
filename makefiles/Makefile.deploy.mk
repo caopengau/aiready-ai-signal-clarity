@@ -117,6 +117,17 @@ clawhub-verify: ## Verify ClawHub is accessible
 		echo "$(YELLOW)⚠️  ClawHub may still be deploying$(NC)"; \
 	fi
 
+dev-clawhub: ## Run ClawHub locally in development mode
+	@$(call log_step,Starting ClawHub local dev server)
+	@cd clawhub && pnpm dev
+
+clawhub-logs: ## Show ClawHub logs (runs sst dev)
+	@$(call log_step,Starting SST dev mode for ClawHub)
+	@cd clawhub && \
+		set -a && [ -f .env ] && . ./.env || true && set +a && \
+		export AWS_PROFILE=$${AWS_PROFILE:-$(AWS_PROFILE)} && \
+		sst dev
+
 ##@ Platform Deployment
 
 deploy-platform: verify-aws-account ## Deploy platform to AWS (dev environment)
