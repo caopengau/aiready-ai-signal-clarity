@@ -83,7 +83,7 @@ secrets/
 *.tmp
 *.temp
 .cache/
-.smithery/
+**/.smithery/
 packages/visualizer/web/report-data.json
 landing/next-env.d.ts
 next-env.d.ts
