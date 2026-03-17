@@ -106,4 +106,32 @@ export const fsTools = {
       }
     },
   }),
+
+  checkoutBranch: createTool({
+    id: 'checkout-branch',
+    description: 'Create and/or checkout a local branch',
+    inputSchema: z.object({
+      rootDir: z.string(),
+      branchName: z.string(),
+      create: z.boolean().default(true),
+    }),
+    outputSchema: z.object({
+      success: z.boolean(),
+      error: z.string().optional(),
+    }),
+    execute: async ({ rootDir, branchName, create }) => {
+      try {
+        if (create) {
+          await git.branch({ fs, dir: rootDir, ref: branchName });
+        }
+        await git.checkout({ fs, dir: rootDir, ref: branchName, force: true });
+        return { success: true };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    },
+  }),
 };

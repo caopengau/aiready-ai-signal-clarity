@@ -25,6 +25,8 @@ export const githubTools = {
         const octokit = new Octokit({ auth: githubToken });
         const [owner, repo] = repoUrl
           .replace('https://github.com/', '')
+          .replace('git@github.com:', '')
+          .replace('.git', '')
           .split('/');
 
         // 1. Get the SHA of the base branch
@@ -75,6 +77,8 @@ export const githubTools = {
         const octokit = new Octokit({ auth: githubToken });
         const [owner, repo] = repoUrl
           .replace('https://github.com/', '')
+          .replace('git@github.com:', '')
+          .replace('.git', '')
           .split('/');
 
         const { data: pr } = await octokit.pulls.create({

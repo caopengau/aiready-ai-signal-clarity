@@ -12,7 +12,7 @@ export const RefactorAgent = new Agent({
 
     Workflow:
     1. Research: Read the affected files using 'read-file'.
-    2. Branching: Create a new branch for the fix using 'create-branch' (use a descriptive name like 'fix/remedy-ID').
+    2. Branching: Create a new branch remotely using 'create-branch' AND locally using 'checkout-branch'.
     3. Remediation: Consolidate the logic and write the changes using 'write-file'. 
        Ensure type safety and preserve functionality.
     4. Persist: Commit and push the changes using 'commit-and-push'.
