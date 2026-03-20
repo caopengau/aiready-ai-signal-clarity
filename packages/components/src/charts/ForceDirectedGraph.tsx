@@ -107,6 +107,28 @@ export interface ForceDirectedGraphProps {
 }
 
 /**
+ * Helper functions for graph node manipulation.
+ * Extracted to reduce semantic duplicate patterns.
+ */
+
+/** Pins a node to its current position (sets fx/fy to current x/y) */
+function pinNode(node: GraphNode): void {
+  node.fx = node.x;
+  node.fy = node.y;
+}
+
+/** Unpins a node (sets fx/fy to null) */
+function unpinNode(node: GraphNode): void {
+  node.fx = null;
+  node.fy = null;
+}
+
+/** Unpins all nodes - helper for bulk unpin operations */
+function unpinAllNodes(nodes: GraphNode[]): void {
+  nodes.forEach(unpinNode);
+}
+
+/**
  * An interactive Force-Directed Graph component using D3.js for physics and React for rendering.
  *
  * Supports multiple layout modes (force, circular, hierarchical), pinning, zooming, and dragging.
@@ -218,26 +240,19 @@ export const ForceDirectedGraph = forwardRef<
         pinAll: () => {
           const newPinned = new Set<string>();
           nodes.forEach((node) => {
-            node.fx = node.x;
-            node.fy = node.y;
+            pinNode(node);
             newPinned.add(node.id);
           });
           setPinnedNodes(newPinned);
           restart();
         },
         unpinAll: () => {
-          nodes.forEach((node) => {
-            node.fx = null;
-            node.fy = null;
-          });
+          unpinAllNodes(nodes);
           setPinnedNodes(new Set());
           restart();
         },
         resetLayout: () => {
-          nodes.forEach((node) => {
-            node.fx = null;
-            node.fy = null;
-          });
+          unpinAllNodes(nodes);
           setPinnedNodes(new Set());
           restart();
         },
@@ -352,8 +367,7 @@ export const ForceDirectedGraph = forwardRef<
         event.stopPropagation();
         dragActiveRef.current = true;
         dragNodeRef.current = node;
-        node.fx = node.x;
-        node.fy = node.y;
+        pinNode(node);
         setPinnedNodes((prev) => new Set([...prev, node.id]));
         stop();
       },
@@ -378,8 +392,7 @@ export const ForceDirectedGraph = forwardRef<
           if (!event.active) restart();
           dragActiveRef.current = true;
           dragNodeRef.current = node;
-          node.fx = node.x;
-          node.fy = node.y;
+          pinNode(node);
           setPinnedNodes((prev) => new Set([...prev, node.id]));
         })
         .on('drag', (event: any) => {
@@ -416,12 +429,10 @@ export const ForceDirectedGraph = forwardRef<
         event.stopPropagation();
         if (!enableDrag) return;
         if (node.fx === null || node.fx === undefined) {
-          node.fx = node.x;
-          node.fy = node.y;
+          pinNode(node);
           setPinnedNodes((prev) => new Set([...prev, node.id]));
         } else {
-          node.fx = null;
-          node.fy = null;
+          unpinNode(node);
           setPinnedNodes((prev) => {
             const next = new Set(prev);
             next.delete(node.id);
@@ -440,10 +451,7 @@ export const ForceDirectedGraph = forwardRef<
         height={height}
         className={cn('bg-white dark:bg-gray-900', className)}
         onDoubleClick={() => {
-          nodes.forEach((n) => {
-            n.fx = null;
-            n.fy = null;
-          });
+          unpinAllNodes(nodes);
           setPinnedNodes(new Set());
           restart();
         }}

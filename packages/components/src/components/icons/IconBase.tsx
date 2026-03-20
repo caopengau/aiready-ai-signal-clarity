@@ -11,6 +11,37 @@ export interface IconBaseProps extends React.SVGProps<SVGSVGElement> {
 }
 
 /**
+ * Common stroke props for line-based icons.
+ * Reduces duplication across icon components.
+ */
+export const STROKE_ICON_PROPS = {
+  strokeWidth: 2,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+/**
+ * Creates an icon component with common stroke props pre-applied.
+ * Reduces semantic duplicate patterns in icon definitions.
+ *
+ * @param _name - Name of the icon (reserved for debugging/future use)
+ * @param children - SVG child elements (paths, circles, etc.)
+ * @param additionalProps - Additional props to pass to IconBase
+ * @returns Icon component with standard stroke styling
+ */
+export function createStrokeIcon(
+  _name: string,
+  children: React.ReactNode,
+  additionalProps?: Partial<IconBaseProps>
+): React.ReactElement {
+  return (
+    <IconBase {...STROKE_ICON_PROPS} {...additionalProps}>
+      {children}
+    </IconBase>
+  );
+}
+
+/**
  * A shared base component for all icons to reduce code duplication
  * and improve AI signal clarity.
  *
