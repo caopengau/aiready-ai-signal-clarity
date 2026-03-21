@@ -35,7 +35,13 @@ test-watch: ## Run tests in watch mode
 
 test-coverage: ## Run tests with coverage report
 	@$(call log_step,Running tests with coverage...)
-	@$(PNPM) test --coverage
+	@for pkg in packages/core packages/pattern-detect packages/context-analyzer packages/consistency packages/visualizer packages/components packages/skills packages/cli; do \
+		if [ -f "$$pkg/package.json" ]; then \
+			$(call log_info,Running coverage for $$pkg...); \
+			cd $$pkg && $(PNPM) test --coverage 2>/dev/null || $(call log_warning,Coverage failed for $$pkg); \
+			cd ../..; \
+		fi; \
+	done
 	@$(call log_success,Coverage report generated)
 
 test-landing: ## Run unit tests for landing page

@@ -19,9 +19,9 @@ export class NeuralSpineStack extends Stack {
   constructor(scope: Construct, id: string) {
     const bus = new EventBus(this, 'NeuralBus');
     const table = new Table(this, 'StateStore', {
-      partitionKey: { name: 'pk', type: AttributeType.STRING }
+      partitionKey: { name: 'pk', type: AttributeType.STRING },
     });
-    
+
     // Link the reasoning engine to the spine
     new Engine(this, 'AutonomousNode', { bus, table });
   }
@@ -39,3 +39,7 @@ The code is open. The architecture is proven. The shift from "AI as a tool" to "
 ---
 
 **Start Your Shift Today:** Learn how AIReady can help you assess and improve your repository's agentic readiness at [getaiready.dev](https://getaiready.dev).
+
+> [!TIP]
+> **Ready for Autonomous Infrastructure?**
+> Check out our open-source project [serverlessclaw](https://github.com/caopengau/serverlessclaw) or try the managed [ClawMore](https://clawmore.getaiready.dev/) service for instant agentic readiness.

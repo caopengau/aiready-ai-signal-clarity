@@ -227,3 +227,7 @@ npx @aiready/context-analyzer ./src
 ---
 
 _Peng Cao is the founder of [receiptclaimer](https://receiptclaimer.com) and creator of [aiready](https://github.com/caopengau/aiready-cli), an open-source suite for measuring and optimizing codebases for AI adoption. He's been writing code for 15 years and learning to work with AI assistants for the last 2._
+
+> [!TIP]
+> **Ready for Autonomous Infrastructure?**
+> Check out our open-source project [serverlessclaw](https://github.com/caopengau/serverlessclaw) or try the managed [ClawMore](https://clawmore.getaiready.dev/) service for instant agentic readiness.

@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build packages
+        run: pnpm build
+      
+      - name: Run tests with coverage
+        run: pnpm test
+        env:
+          CI: true
+      
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            packages/*/coverage/
+          retention-days: 7
+
+  coverage-gate:
+    name: Coverage Gate
+    needs: test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports
+          path: packages/
+      
+      - name: Check coverage thresholds
+        run: |
+          echo "Checking coverage thresholds..."
+          FAILED=0
+          
+          for pkg_dir in packages/*/coverage; do
+            if [ -f "$pkg_dir/coverage-summary.json" ]; then
+              pkg_name=$(basename $(dirname "$pkg_dir"))
+              echo ""
+              echo "=== Package: $pkg_name ==="
+              
+              # Extract coverage percentages
+              LINES=$(jq -r '.total.lines.pct' "$pkg_dir/coverage-summary.json")
+              STATEMENTS=$(jq -r '.total.statements.pct' "$pkg_dir/coverage-summary.json")
+              FUNCTIONS=$(jq -r '.total.functions.pct' "$pkg_dir/coverage-summary.json")
+              BRANCHES=$(jq -r '.total.branches.pct' "$pkg_dir/coverage-summary.json")
+              
+              echo "Lines:      $LINES%"
+              echo "Statements: $STATEMENTS%"
+              echo "Functions:  $FUNCTIONS%"
+              echo "Branches:   $BRANCHES%"
+              
+              # Check thresholds (60%)
+              THRESHOLD=60
+              if (( $(echo "$LINES < $THRESHOLD" | bc -l) )) || \
+                 (( $(echo "$STATEMENTS < $THRESHOLD" | bc -l) )) || \
+                 (( $(echo "$FUNCTIONS < $THRESHOLD" | bc -l) )) || \
+                 (( $(echo "$BRANCHES < $THRESHOLD" | bc -l) )); then
+                echo "❌ Coverage below threshold ($THRESHOLD%)"
+                FAILED=1
+              else
+                echo "✅ Coverage meets threshold"
+              fi
+            fi
+          done
+          
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "❌ Coverage gate failed - some packages are below the 60% threshold"
+            exit 1
+          else
+            echo ""
+            echo "✅ All packages meet coverage thresholds"
+          fi

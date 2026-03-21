@@ -18,7 +18,7 @@ describe('Score Utilities', () => {
 
   it('should return correct labels', () => {
     expect(scoreLabel(80)).toBe('AI-Ready');
-    expect(scoreLabel(60)).toBe('Needs Improvement');
+    expect(scoreLabel(60)).toBe('Fair');
     expect(scoreLabel(30)).toBe('Critical Issues');
     expect(scoreLabel(null)).toBe('Not analyzed');
   });

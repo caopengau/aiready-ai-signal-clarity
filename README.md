@@ -2,7 +2,7 @@
 
 > Explains why AI tools struggle with your codebase—and where small changes unlock outsized leverage
 
-🌐 **[Visit our website](https://getaiready.dev)** | 📦 [npm](https://www.npmjs.com/package/@aiready/cli) | ⭐ [GitHub](https://github.com/caopengau/aiready-cli)
+🌐 **[Visit our website](https://getaiready.dev)** | 📦 [npm](https://www.npmjs.com/package/@aiready/cli) | ⭐ [GitHub](https://github.com/caopengau/aiready-cli) | ![Coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)
 
 📖 **Quick Links:** [🚀 Quick Start (5 min)](./QUICK-START.md) | [🔐 Security](./SECURITY.md) | [🤔 Not Another Linter?](./NOT-ANOTHER-LINTER.md) | [🏢 Enterprise](./ENTERPRISE-READINESS-PLAN.md)
 

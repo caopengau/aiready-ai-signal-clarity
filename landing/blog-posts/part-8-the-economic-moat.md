@@ -47,3 +47,7 @@ The team with the most "Agentic Ready" codebase—the one with the lowest Naviga
 `npx @aiready/cli scan --score`
 
 _Peng Cao is the founder of [aiready](https://github.com/caopengau/aiready-cli)._
+
+> [!TIP]
+> **Ready for Autonomous Infrastructure?**
+> Check out our open-source project [serverlessclaw](https://github.com/caopengau/serverlessclaw) or try the managed [ClawMore](https://clawmore.getaiready.dev/) service for instant agentic readiness.

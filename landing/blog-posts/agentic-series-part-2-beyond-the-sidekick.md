@@ -18,7 +18,7 @@ The problem with treating AI as a "chatbot" or a "sidekick" is that it remains *
 
 An **Agentic System** doesn't live in a chat box. It lives in your **Infrastructure**. It is woven into the very fabric of your application.
 
-Take **Serverless Claw** as an example. It isn't a bot you talk to; it's a living ecosystem of autonomous nodes inhabiting an AWS stack. When it encounters a gap—say, a missing feature or an infrastructure bottleneck—it doesn't just suggest a fix. It:
+Take [**Serverless Claw**](https://github.com/caopengau/serverlessclaw) as an example. It isn't a bot you talk to; it's a living ecosystem of autonomous nodes inhabiting an AWS stack. When it encounters a gap—say, a missing feature or an infrastructure bottleneck—it doesn't just suggest a fix. It:
 
 1. **Identifies the Gap**: "I don't have a way to process PDF receipts."
 2. **Architects the Solution**: It designs a strategy involving new Lambda functions and specific IAM permissions.
@@ -40,3 +40,7 @@ The era of the "AI assistant" is ending. The era of the **Agentic System** has b
 ---
 
 _Next up: Post 3: "The Neural Spine: Event-Driven Orchestration"_
+
+> [!TIP]
+> **Ready for Autonomous Infrastructure?**
+> Check out our open-source project [serverlessclaw](https://github.com/caopengau/serverlessclaw) or try the managed [ClawMore](https://clawmore.getaiready.dev/) service for instant agentic readiness.
