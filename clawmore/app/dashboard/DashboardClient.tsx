@@ -194,7 +194,14 @@ export default function DashboardClient({
                       full managed infrastructure, zero-idle guarantees, and $10
                       in AI mutation fuel per month.
                     </p>
-                    <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm transition-colors border border-white/10">
+                    <button 
+                      onClick={async () => {
+                        const res = await fetch('/api/billing/portal', { method: 'POST' });
+                        const data = await res.json();
+                        if (data.url) window.location.href = data.url;
+                      }}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm transition-colors border border-white/10"
+                    >
                       Manage Billing
                     </button>
                   </div>

@@ -152,8 +152,9 @@ export default $config({
         GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || '',
         GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
         GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
-        AUTH_SECRET:
-          process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '',
+        AUTH_SECRET: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '',
+        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',
+        ADMIN_EMAILS: process.env.ADMIN_EMAILS || '',
       },
       permissions: [
         {

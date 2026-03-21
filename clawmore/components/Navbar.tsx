@@ -104,11 +104,10 @@ export default function Navbar({ variant = 'home', dict }: NavbarProps) {
                 <Activity className="w-3 h-3" /> {dict?.navbar?.blog || 'Blog'}
               </Link>
               <Link
-                href="/admin/login"
+                href="/login"
                 className="hover:text-cyber-blue hover:glow-blue transition-colors flex items-center gap-1.5 border border-cyber-blue/30 px-3 py-1 rounded-sm bg-cyber-blue/5"
               >
-                <Zap className="w-3 h-3" />{' '}
-                {dict?.navbar?.signin || 'Sign In (Beta)'}
+                <Zap className="w-3 h-3" /> {dict?.navbar?.signin || 'Sign In (Beta)'}
               </Link>
             </div>
           ) : (
