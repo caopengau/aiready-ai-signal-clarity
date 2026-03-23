@@ -20,7 +20,7 @@ describe('analyzeIssues', () => {
     const result = analyzeIssues(baseParams);
 
     expect(result.severity).toBe(Severity.Info);
-    expect(result.issues).toContain('No significant issues detected');
+    expect(result.issues).toHaveLength(0);
     expect(result.potentialSavings).toBe(0);
   });
 

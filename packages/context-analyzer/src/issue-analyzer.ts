@@ -118,10 +118,8 @@ export function analyzeIssues(params: {
     potentialSavings += contextBudget * 0.3;
   }
 
-  if (issues.length === 0) {
-    issues.push('No significant issues detected');
-    recommendations.push('File is well-structured for AI context usage');
-  }
+  // Don't create issues when there are no real problems
+  // This prevents false positives that artificially lower scores
 
   // Detect build artifacts
   if (isBuildArtifact(file)) {
