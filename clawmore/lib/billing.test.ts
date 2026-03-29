@@ -34,7 +34,7 @@ describe('Billing Logic', () => {
     vi.clearAllMocks();
   });
 
-  it('createPlatformSubscriptionSession should include MutationTaxPrice in line_items', async () => {
+  it('createPlatformSubscriptionSession should create checkout session with correct metadata', async () => {
     mockCreateSession.mockResolvedValue({
       id: 'sess_123',
       url: 'https://stripe.com/sess_123',
@@ -52,12 +52,13 @@ describe('Billing Logic', () => {
       expect.objectContaining({
         line_items: expect.arrayContaining([
           expect.objectContaining({ price: 'price_platform_123', quantity: 1 }),
-          expect.objectContaining({ price: 'price_mutation_tax_999' }),
         ]),
         metadata: expect.objectContaining({
           type: 'platform_subscription',
           userEmail: 'test@example.com',
+          tier: 'starter',
         }),
+        mode: 'subscription',
       })
     );
   });

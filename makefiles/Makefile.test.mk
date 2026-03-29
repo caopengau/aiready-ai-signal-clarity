@@ -7,7 +7,8 @@ include $(MAKEFILE_DIR)/Makefile.shared.mk
 
 .PHONY: test test-core test-pattern-detect test-watch test-coverage test-verify-cli test-contract test-integration \
 	test-landing-e2e test-platform-e2e test-platform test-landing test-platform-e2e-local test-landing-e2e-local \
-	test-visualizer test-vscode-extension test-downstream
+	test-visualizer test-vscode-extension test-downstream test-clawmore-e2e-local test-clawmore-e2e-prod \
+	test-clawmore-e2e-full test-clawmore-e2e-console test-clawmore-integration test-clawmore-contracts
 
 test: ## Run tests for all packages (noninteractive)
 	@$(call log_step,Running tests for all packages (noninteractive)...) 
@@ -124,3 +125,23 @@ test-clawmore-e2e-prod: ## Run ClawMore E2E tests against live production site
 	@$(call log_step,Running ClawMore E2E tests against production...)
 	@cd clawmore && BASE_URL=https://clawmore.ai pnpm exec playwright test e2e/seo.spec.ts --config playwright.config.prod.ts
 	@$(call log_success,ClawMore production tests passed)
+
+test-clawmore-e2e-full: ## Run full ClawMore provisioning flow E2E tests
+	@$(call log_step,Running full ClawMore provisioning flow E2E tests...)
+	@cd clawmore && pnpm exec playwright test e2e/provisioning-flow.spec.ts --config playwright.config.local.ts
+	@$(call log_success,Full provisioning flow tests passed)
+
+test-clawmore-e2e-console: ## Run ClawMore provisioning console UI E2E tests
+	@$(call log_step,Running ClawMore provisioning console UI tests...)
+	@cd clawmore && pnpm exec playwright test e2e/provisioning-console.spec.ts --config playwright.config.local.ts
+	@$(call log_success,Provisioning console tests passed)
+
+test-clawmore-integration: ## Run ClawMore integration tests (webhook → provisioning → DB)
+	@$(call log_step,Running ClawMore integration tests...)
+	@cd clawmore && pnpm test
+	@$(call log_success,ClawMore integration tests passed)
+
+test-clawmore-contracts: ## Run ClawMore Hub-Spoke contract tests
+	@$(call log_step,Running ClawMore Hub-Spoke contract tests...)
+	@cd clawmore && pnpm test lib/contracts/hub-spoke.test.ts
+	@$(call log_success,ClawMore contract tests passed)

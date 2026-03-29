@@ -160,7 +160,10 @@ release-checks-platform: ## Shared checks for release-platform
 
 release-checks-clawmore: ## Shared checks for clawmore release
 	@$(call log_step,Running clawmore release checks...)
+	@cd clawmore && pnpm test
 	@$(call run_if_enabled,$(RELEASE_E2E),$(MAKE) -C $(ROOT_DIR) test-clawmore-e2e-local,clawmore local E2E)
+	@$(MAKE) -C $(ROOT_DIR) test-clawmore-integration
+	@$(MAKE) -C $(ROOT_DIR) test-clawmore-contracts
 
 ###############################################################################
 # Version bump targets (4 pattern rules replace 12 individual targets)

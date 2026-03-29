@@ -116,8 +116,9 @@ describe('vending AWS helpers', () => {
     });
 
     const { createManagedAccount } = await import('./vending');
-    const reqId = await createManagedAccount('user@example.com', 'TestCo');
-    expect(reqId).toBe('req-abc-123');
+    const result = await createManagedAccount('user@example.com', 'TestCo');
+    expect(result.requestId).toBe('req-abc-123');
+    expect(result.estimatedTimeSeconds).toBeGreaterThan(0);
   });
 
   it('waitForAccountCreation returns account id when status becomes SUCCEEDED', async () => {

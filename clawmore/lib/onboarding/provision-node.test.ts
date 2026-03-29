@@ -98,6 +98,7 @@ vi.mock('../db', () => ({
   createManagedAccountRecord: vi.fn().mockResolvedValue({}),
   ensureUserMetadata: vi.fn().mockResolvedValue({}),
   updateProvisioningStatus: vi.fn().mockResolvedValue({}),
+  updateAccountStatus: vi.fn().mockResolvedValue({}),
 }));
 
 describe('Provisioning Secret Injection', () => {
