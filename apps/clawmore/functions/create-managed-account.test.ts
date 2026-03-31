@@ -63,7 +63,8 @@ describe('create-managed-account handler', () => {
       '123456789012'
     );
     expect(vending.bootstrapManagedAccount).toHaveBeenCalledWith(
-      '123456789012'
+      '123456789012',
+      'clawmost'
     );
   });
 

@@ -140,10 +140,11 @@ describe('Hub-Spoke Contract Tests', () => {
       const secretCalls = mockCreateOrUpdateRepoSecret.mock.calls;
       const secretNames = secretCalls.map((call) => call[0].secret_name);
 
-      // Required AWS secrets for spoke
-      expect(secretNames).toContain('AWS_ACCESS_KEY_ID');
-      expect(secretNames).toContain('AWS_SECRET_ACCESS_KEY');
+      // Required AWS secrets for spoke (role-based access)
       expect(secretNames).toContain('AWS_ROLE_ARN');
+      expect(secretNames).toContain('HUB_USER_ID');
+      expect(secretNames).toContain('HUB_EVENT_BUS_NAME');
+      expect(secretNames).toContain('EVOLUTION_OPT_IN');
     });
 
     it('should inject HUB_USER_ID for spoke-to-hub communication', async () => {
