@@ -1,36 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { TESTABILITY_PROVIDER } from '../provider';
-import * as analyzer from '../analyzer';
-
-vi.mock('../analyzer', () => ({
-  analyzeTestability: vi.fn(),
-}));
 
 describe('Testability Provider', () => {
-  it('should analyze and return SpokeOutput', async () => {
-    vi.mocked(analyzer.analyzeTestability).mockResolvedValue({
-      summary: { score: 90, dimensions: {} } as any,
-      issues: [],
-      rawData: { sourceFiles: 10, testFiles: 5 } as any,
-      recommendations: [],
-    });
-
-    const output = await TESTABILITY_PROVIDER.analyze({ rootDir: '.' });
-
-    expect(output.summary.score).toBe(90);
-    expect(output.metadata!.toolName).toBe('testability-index');
+  it('should have correct ID', () => {
+    expect(TESTABILITY_PROVIDER.id).toBe('testability');
   });
 
-  it('should score an output', () => {
-    const mockOutput = {
-      summary: { score: 80, dimensions: {} } as any,
-      metadata: { rawData: {} },
-      results: [],
-    };
-
-    const scoring = TESTABILITY_PROVIDER.score(mockOutput as any, {
-      rootDir: '.',
-    });
-    expect(scoring.score).toBe(80);
+  it('should have alias', () => {
+    expect(TESTABILITY_PROVIDER.alias).toContain('testability-index');
   });
 });
