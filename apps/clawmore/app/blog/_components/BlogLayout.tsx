@@ -2,11 +2,11 @@
 
 import { useState, ReactNode } from 'react';
 import { Clock, Hash } from 'lucide-react';
-import Modal from '../Modal';
-import LeadForm from '../LeadForm';
-import Navbar from '../Navbar';
-import Breadcrumbs from '../Breadcrumbs';
-import JsonLd from '../JsonLd';
+import Modal from '@/components/Modal';
+import LeadForm from '@/components/LeadForm';
+import Navbar from '@/components/Navbar';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import JsonLd from '@/components/JsonLd';
 
 interface BlogLayoutProps {
   children: ReactNode;
@@ -26,14 +26,14 @@ interface BlogLayoutProps {
     description: string;
     image: string;
   };
-  breadcrumbItems: Array<{ label: string; href: string }>;
+  breadcrumbItems?: Array<{ label: string; href: string }>;
 }
 
 export default function BlogLayout({
   children,
   metadata,
   header,
-  breadcrumbItems,
+  breadcrumbItems = [],
 }: BlogLayoutProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const closeModal = () => setIsModalOpen(false);
