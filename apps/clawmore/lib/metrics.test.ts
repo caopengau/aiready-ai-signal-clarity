@@ -23,12 +23,11 @@ describe('Metrics Library', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Set NODE_ENV to production to enable metrics
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
   });
 
   afterEach(() => {
-    // Restore NODE_ENV
-    process.env.NODE_ENV = 'test';
+    vi.unstubAllEnvs();
   });
 
   it('should send metric data to CloudWatch in production', async () => {
@@ -61,7 +60,7 @@ describe('Metrics Library', () => {
   });
 
   it('should skip sending metrics when not in production', async () => {
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
 
     await putMetric({
       name: 'DevMetric',
