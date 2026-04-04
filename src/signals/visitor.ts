@@ -310,6 +310,14 @@ export function detectStructuralSignals(
               'AccountName',
               'Key',
               'Value',
+              'title',
+              'description',
+              'alt',
+              'name',
+              'card',
+              'locale',
+              'themeColor',
+              'colorScheme',
             ].includes(esParent.key.name);
 
           const isParserFile = filePath.includes('parser');

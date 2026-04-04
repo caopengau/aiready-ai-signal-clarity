@@ -28,7 +28,7 @@ describe('AI Signal Clarity Scanner', () => {
         `
         function calculate() {
           // These are magic literals
-          const timeout = setTimeout(() => {}, 5000);
+          const timeout = setTimeout(() => {}, 5001);
           if (status === "unrecognized") {
             return 402;
           }
@@ -45,7 +45,7 @@ describe('AI Signal Clarity Scanner', () => {
       );
 
       expect(issues.length).toBeGreaterThanOrEqual(1);
-      expect(issues.some((i) => i.message.includes('5000'))).toBe(true);
+      expect(issues.some((i) => i.message.includes('5001'))).toBe(true);
       expect(issues.some((i) => i.message.includes('402'))).toBe(true);
       // "failed" is now ignored, so we use "unrecognized"
       expect(issues.some((i) => i.message.includes('unrecognized'))).toBe(true);

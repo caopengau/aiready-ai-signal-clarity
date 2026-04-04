@@ -113,7 +113,12 @@ export function detectExportSignals(
           lowerName.endsWith('footer') ||
           lowerName.endsWith('summary') ||
           lowerName.endsWith('block') ||
-          lowerName.endsWith('section');
+          lowerName.endsWith('section') ||
+          // Framework-reserved names (Next.js, API routes)
+          lowerName === 'register' ||
+          ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'].includes(
+            lowerName
+          );
 
         if (looksPure && !isConsoleOutputFunction) {
           signals.implicitSideEffects++;

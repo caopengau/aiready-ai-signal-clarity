@@ -62,6 +62,20 @@ export function isMagicString(value: string): boolean {
   if (/^#[0-9a-fA-F]{3,6}$/.test(value)) return false;
   if (/^-?\d+(\.\d+)?(px|rem|em|%|vh|vw|ms|s|deg)$/.test(value)) return false; // CSS units
   if (/^[a-z]{2}([-_][A-Z]{2})?$/.test(value)) return false; // Locales like "en" or "en_US"
+  if (
+    /^cache-control|content-type|authorization|set-cookie|cookie|origin|referer|host|connection$/i.test(
+      value
+    )
+  )
+    return false; // HTTP headers
+  if (
+    /^max-age=\d+|s-maxage=\d+|public|private|no-cache|no-store|must-revalidate$/i.test(
+      value
+    )
+  )
+    return false; // Cache-Control values
+  if (/^lax|strict|none|secure|httponly|path=\/$/i.test(value)) return false; // Cookie attributes
+  if (/^[\w-]+:\/\//.test(value)) return false; // URL schemes
 
   // Use the classifier to distinguish between meaningful and UI strings
   const category = classifyStringLiteral(value);
