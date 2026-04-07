@@ -78,7 +78,10 @@ export function detectStructuralSignals(
         });
       } else {
         const esNode = node as TSESTree.Node;
-        if (esNode.type === 'Literal') {
+        if (
+          esNode.type === 'Literal' ||
+          (esNode.type as string) === 'BigIntLiteral'
+        ) {
           checkEsTreeLiterals(
             esNode as TSESTree.Literal,
             parent as TSESTree.Node,

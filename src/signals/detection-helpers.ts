@@ -33,9 +33,13 @@ export function checkTreeSitterLiterals(
 ) {
   const { filePath, domainVocabulary, signals, issues } = ctx;
 
-  if (tsNode.type === 'number') {
-    const val = parseFloat(tsNode.text);
-    if (!isNaN(val) && isMagicNumber(val)) {
+  if (tsNode.type === 'number' || tsNode.type === 'big_int_literal') {
+    const isBigInt =
+      tsNode.type === 'big_int_literal' || tsNode.text.endsWith('n');
+    const val = isBigInt
+      ? BigInt(tsNode.text.replace('n', ''))
+      : parseFloat(tsNode.text);
+    if (!isNaN(val as any) && isMagicNumber(val)) {
       signals.magicLiterals++;
       issues.push({
         type: IssueType.MagicLiteral,
@@ -113,7 +117,9 @@ export function checkTreeSitterLiterals(
  * Helper to check magic literals for ESTree nodes.
  */
 export function checkEsTreeLiterals(
-  esNode: TSESTree.Literal,
+  esNode:
+    | TSESTree.Literal
+    | { type: 'BigIntLiteral'; value: bigint; loc?: TSESTree.SourceLocation },
   parent: TSESTree.Node | undefined,
   keyInParent: string | undefined,
   ctx: {
@@ -274,12 +280,13 @@ export function checkEsTreeLiterals(
     )
   ) {
     if (
-      (typeof esNode.value === 'number' || typeof esNode.value === 'bigint') &&
-      isMagicNumber(esNode.value)
+      (typeof (esNode as any).value === 'number' ||
+        typeof (esNode as any).value === 'bigint') &&
+      isMagicNumber((esNode as any).value)
     ) {
       signals.magicLiterals++;
-      const valDisplay =
-        typeof esNode.value === 'bigint' ? `${esNode.value}n` : esNode.value;
+      const val = (esNode as any).value;
+      const valDisplay = typeof val === 'bigint' ? `${val}n` : val;
       issues.push({
         type: 'magic-literal',
         category: CATEGORY_MAGIC_LITERAL,

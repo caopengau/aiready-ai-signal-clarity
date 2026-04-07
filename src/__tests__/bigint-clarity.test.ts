@@ -14,7 +14,14 @@ describe('BigInt Clarity Support', () => {
     const code = `
       export const ZERO = 0n;
       export const ONE = 1n;
+      export const TWO = 2n;
+      export const TEN = 10n;
+      export const MINUTE = 60n;
+      export const HUNDRED = 100n;
       export const THOUSAND = 1000n;
+      export const HOUR = 3600n;
+      export const DAY = 86400n;
+      export const MILLION = 1_000_000n;
     `;
     writeFileSync(testFile, code);
 

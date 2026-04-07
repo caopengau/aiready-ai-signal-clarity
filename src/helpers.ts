@@ -36,7 +36,16 @@ export function isMagicNumber(value: number | bigint): boolean {
     30, // standard retry/polling limits
     0n,
     1n,
+    2n,
+    10n,
+    60n,
+    100n,
     1000n,
+    3600n,
+    86400n,
+    1_000_000n,
+    1_000_000_000n,
+    1_000_000_000_000n,
   ]);
 
   return (
