@@ -23,9 +23,9 @@ export function isAmbiguousName(name: string): boolean {
   return AMBIGUOUS_NAME_PATTERNS.some((p) => p.test(name));
 }
 
-export function isMagicNumber(value: number): boolean {
+export function isMagicNumber(value: number | bigint): boolean {
   // Ignore common infrastructure and time constants
-  const infrastructureIgnores = new Set([
+  const infrastructureIgnores = new Set<number | bigint>([
     3600, // 1 hour
     86400, // 1 day
     15000,
@@ -34,9 +34,14 @@ export function isMagicNumber(value: number): boolean {
     10,
     20,
     30, // standard retry/polling limits
+    0n,
+    1n,
+    1000n,
   ]);
 
-  return !MAGIC_LITERAL_IGNORE.has(value) && !infrastructureIgnores.has(value);
+  return (
+    !MAGIC_LITERAL_IGNORE.has(value as any) && !infrastructureIgnores.has(value)
+  );
 }
 
 export function isMagicString(value: string): boolean {

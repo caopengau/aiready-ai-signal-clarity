@@ -273,19 +273,24 @@ export function checkEsTreeLiterals(
       (isConfigFile && typeof esNode.value === 'string')
     )
   ) {
-    if (typeof esNode.value === 'number' && isMagicNumber(esNode.value)) {
+    if (
+      (typeof esNode.value === 'number' || typeof esNode.value === 'bigint') &&
+      isMagicNumber(esNode.value)
+    ) {
       signals.magicLiterals++;
+      const valDisplay =
+        typeof esNode.value === 'bigint' ? `${esNode.value}n` : esNode.value;
       issues.push({
         type: 'magic-literal',
         category: CATEGORY_MAGIC_LITERAL,
         severity: 'minor',
-        message: `Magic number ${esNode.value} — AI will invent wrong semantics. Extract to a named constant.`,
+        message: `Magic number ${valDisplay} — AI will invent wrong semantics. Extract to a named constant.`,
         location: {
           file: filePath,
           line: esNode.loc?.start.line || 1,
           column: esNode.loc?.start.column,
         },
-        suggestion: `const MEANINGFUL_NAME = ${esNode.value};`,
+        suggestion: `const MEANINGFUL_NAME = ${valDisplay};`,
       });
     } else if (
       typeof esNode.value === 'string' &&
