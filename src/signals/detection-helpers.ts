@@ -40,12 +40,13 @@ export function checkTreeSitterLiterals(
       ? BigInt(tsNode.text.replace('n', ''))
       : parseFloat(tsNode.text);
     if (!isNaN(val as any) && isMagicNumber(val)) {
+      const isBigIntLiteral = tsNode.type === 'big_int_literal';
       signals.magicLiterals++;
       issues.push({
         type: IssueType.MagicLiteral,
         category: CATEGORY_MAGIC_LITERAL,
-        severity: Severity.Minor,
-        message: `Magic number ${tsNode.text} — AI will invent wrong semantics. Extract to a named constant.`,
+        severity: isBigIntLiteral ? Severity.Info : Severity.Minor,
+        message: `Magic ${isBigIntLiteral ? 'BigInt' : 'number'} ${tsNode.text} — AI will invent wrong semantics. Extract to a named constant if this has specific domain meaning.`,
         location: {
           file: filePath,
           line: tsNode.startPosition.row + 1,
@@ -286,12 +287,13 @@ export function checkEsTreeLiterals(
     ) {
       signals.magicLiterals++;
       const val = (esNode as any).value;
-      const valDisplay = typeof val === 'bigint' ? `${val}n` : val;
+      const isBigInt = typeof val === 'bigint';
+      const valDisplay = isBigInt ? `${val}n` : val;
       issues.push({
         type: 'magic-literal',
         category: CATEGORY_MAGIC_LITERAL,
-        severity: 'minor',
-        message: `Magic number ${valDisplay} — AI will invent wrong semantics. Extract to a named constant.`,
+        severity: isBigInt ? 'info' : 'minor',
+        message: `Magic ${isBigInt ? 'BigInt' : 'number'} ${valDisplay} — AI will invent wrong semantics. Extract to a named constant if this has specific domain meaning.`,
         location: {
           file: filePath,
           line: esNode.loc?.start.line || 1,
