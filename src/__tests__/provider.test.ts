@@ -11,6 +11,7 @@ describe('AI Signal Clarity Provider', () => {
     vi.mocked(analyzer.analyzeAiSignalClarity).mockResolvedValue({
       summary: { filesAnalyzed: 1 } as any,
       results: [],
+      issues: [],
       aggregateSignals: {} as any,
       recommendations: [],
     });
