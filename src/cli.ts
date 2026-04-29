@@ -138,16 +138,14 @@ EXAMPLES:
         ],
         stats: [
           { label: 'Files Analyzed', value: report.summary.filesAnalyzed },
-          { label: 'Total Signals', value: report.summary.totalSignals },
-          { label: 'Critical', value: report.summary.criticalSignals },
+          { label: 'Total Issues', value: report.summary.totalIssues },
+          { label: 'Critical', value: report.summary.criticalIssues },
         ],
-        issues: report.results
-          .flatMap((r: any) =>
-            r.issues.map((i: any) => ({
-              ...i,
-              message: `[${r.fileName.split('/').pop()}] ${i.message}`,
-            }))
-          )
+        issues: report.issues
+          .map((i: any) => ({
+            ...i,
+            message: `[${i.location.file.split('/').pop()}] ${i.message}`,
+          }))
           .slice(0, 10),
         recommendations: report.recommendations,
         elapsedTime: elapsed,

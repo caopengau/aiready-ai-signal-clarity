@@ -28,14 +28,15 @@ describe('AiSignalClarity Index Exports', () => {
     const report: AiSignalClarityReport = {
       summary: {
         filesAnalyzed: 1,
-        totalSignals: 0,
-        criticalSignals: 0,
-        majorSignals: 0,
-        minorSignals: 0,
+        totalIssues: 0,
+        criticalIssues: 0,
+        majorIssues: 0,
+        minorIssues: 0,
         topRisk: '',
         rating: 'good',
       },
       results: [],
+      issues: [],
       aggregateSignals: {
         magicLiterals: 0,
         booleanTraps: 0,

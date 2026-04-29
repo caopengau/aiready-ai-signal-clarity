@@ -7,14 +7,15 @@ describe('AI Signal Clarity Scoring', () => {
   const mockReport: AiSignalClarityReport = {
     summary: {
       filesAnalyzed: 10,
-      totalSignals: 5,
-      criticalSignals: 1,
-      majorSignals: 2,
-      minorSignals: 2,
+      totalIssues: 5,
+      criticalIssues: 1,
+      majorIssues: 2,
+      minorIssues: 2,
       topRisk: 'magic-literals',
       rating: 'moderate',
     },
     results: [],
+    issues: [],
     aggregateSignals: {
       magicLiterals: 80,
       booleanTraps: 2,

@@ -34,14 +34,15 @@ describe('AiSignalClarity Types', () => {
       const report: AiSignalClarityReport = {
         summary: {
           filesAnalyzed: 100,
-          totalSignals: 500,
-          criticalSignals: 5,
-          majorSignals: 50,
-          minorSignals: 445,
+          totalIssues: 500,
+          criticalIssues: 5,
+          majorIssues: 50,
+          minorIssues: 445,
           topRisk: 'magic-literals',
           rating: 'high',
         },
         results: [],
+        issues: [],
         aggregateSignals: mockSignals,
         recommendations: ['Extract magic literals into named constants'],
       };

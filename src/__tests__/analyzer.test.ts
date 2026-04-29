@@ -50,7 +50,8 @@ describe('analyzeAiSignalClarity', () => {
     const report = await analyzeAiSignalClarity({ rootDir: '.' });
 
     expect(report.summary.filesAnalyzed).toBe(2);
-    expect(report.summary.criticalSignals).toBe(2); // 1 per file x 2 files
+    expect(report.summary.criticalIssues).toBe(2); // 1 per file x 2 files
+    expect(report.issues.length).toBe(2);
     expect((report.aggregateSignals as any).magicLiterals).toBe(2);
     expect(report.summary.rating).toBeDefined();
     expect(core.scanFiles).toHaveBeenCalled();
@@ -100,7 +101,8 @@ describe('analyzeAiSignalClarity', () => {
 
     expect(report.results[0].issues.length).toBe(1);
     expect(report.results[0].issues[0].severity).toBe('critical');
-    // Summary metrics should still reflect all signals before filtering if that's the implementation
-    expect(report.summary.totalSignals).toBe(2);
+    expect(report.issues.length).toBe(1);
+    // Summary metrics should reflect filtered signals now
+    expect(report.summary.totalIssues).toBe(1);
   });
 });

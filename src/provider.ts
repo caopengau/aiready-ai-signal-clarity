@@ -39,15 +39,16 @@ export const AI_SIGNAL_CLARITY_PROVIDER = createProvider({
     const report: AiSignalClarityReport = {
       summary: {
         filesAnalyzed: output.summary?.totalFiles ?? 0,
-        totalSignals: output.summary?.totalIssues ?? 0,
-        criticalSignals: output.summary?.criticalIssues ?? 0,
-        majorSignals: output.summary?.majorIssues ?? 0,
-        minorSignals: 0,
+        totalIssues: output.summary?.totalIssues ?? 0,
+        criticalIssues: output.summary?.criticalIssues ?? 0,
+        majorIssues: output.summary?.majorIssues ?? 0,
+        minorIssues: output.summary?.minorIssues ?? 0,
         topRisk: '',
         rating: 'good',
       },
       aggregateSignals: output.metadata?.aggregateSignals ?? {},
       results: [],
+      issues: [],
       recommendations: [],
     };
     return calculateAiSignalClarityScore(report);

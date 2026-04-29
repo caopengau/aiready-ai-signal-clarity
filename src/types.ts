@@ -33,14 +33,19 @@ export interface FileAiSignalClarityResult extends AnalysisResult {
 export interface AiSignalClarityReport extends SpokeOutput {
   summary: {
     filesAnalyzed: number;
-    totalSignals: number;
-    criticalSignals: number;
-    majorSignals: number;
-    minorSignals: number;
+    totalIssues: number;
+    criticalIssues: number;
+    majorIssues: number;
+    minorIssues: number;
     topRisk: string;
     rating: string;
+    totalSignals?: number; // Keep for backward compatibility
+    criticalSignals?: number; // Keep for backward compatibility
+    majorSignals?: number; // Keep for backward compatibility
+    minorSignals?: number; // Keep for backward compatibility
   };
   results: FileAiSignalClarityResult[];
+  issues: AiSignalClarityIssue[];
   aggregateSignals: any;
   recommendations: string[];
 }

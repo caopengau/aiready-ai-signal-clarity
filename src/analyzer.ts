@@ -84,13 +84,13 @@ export async function analyzeAiSignalClarity(
 
   // Count severities
   const allIssues = results.flatMap((r) => r.issues);
-  const criticalSignals = allIssues.filter(
+  const criticalIssues = allIssues.filter(
     (i) => getLevel(i.severity) === 4
   ).length;
-  const majorSignals = allIssues.filter(
+  const majorIssues = allIssues.filter(
     (i) => getLevel(i.severity) === 3
   ).length;
-  const minorSignals = allIssues.filter(
+  const minorIssues = allIssues.filter(
     (i) => getLevel(i.severity) === 2
   ).length;
 
@@ -101,17 +101,24 @@ export async function analyzeAiSignalClarity(
     issues: r.issues.filter((i) => getLevel(i.severity) >= getLevel(minSev)),
   }));
 
+  const filteredIssues = filteredResults.flatMap((r) => r.issues);
+
   return {
     summary: {
       filesAnalyzed: files.length,
-      totalSignals: allIssues.length,
-      criticalSignals,
-      majorSignals,
-      minorSignals,
+      totalIssues: filteredIssues.length,
+      totalSignals: filteredIssues.length, // Alias for backward compatibility
+      criticalIssues,
+      criticalSignals: criticalIssues, // Alias for backward compatibility
+      majorIssues,
+      majorSignals: majorIssues, // Alias for backward compatibility
+      minorIssues,
+      minorSignals: minorIssues, // Alias for backward compatibility
       topRisk: riskResult.topRisk,
       rating: riskResult.rating,
     },
     results: filteredResults,
+    issues: filteredIssues,
     aggregateSignals: aggregate,
     recommendations: riskResult.recommendations,
   };
