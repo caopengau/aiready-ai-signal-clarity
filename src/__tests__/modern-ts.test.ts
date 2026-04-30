@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { performSignalClarityScan } from '../scanner';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';

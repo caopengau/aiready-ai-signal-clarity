@@ -1,10 +1,5 @@
 import { SignalContext, SignalResult } from './types';
-import { isMagicNumber, isMagicString } from '../helpers';
-import {
-  CATEGORY_MAGIC_LITERAL,
-  CATEGORY_DEEP_CALLBACK,
-  CALLBACK_DEPTH_THRESHOLD,
-} from './constants';
+import { CATEGORY_DEEP_CALLBACK, CALLBACK_DEPTH_THRESHOLD } from './constants';
 import type { TSESTree } from '@typescript-eslint/types';
 import type * as Parser from 'web-tree-sitter';
 import {

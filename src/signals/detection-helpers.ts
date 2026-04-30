@@ -1,4 +1,4 @@
-import { Severity, IssueType, SignalContext } from './types';
+import { Severity, IssueType } from './types';
 import {
   isAmbiguousName,
   isMagicNumber,
