@@ -163,7 +163,24 @@ export function checkEsTreeLiterals(
   }
 
   const isObjectKey = esParent?.type === 'Property' && keyInParent === 'key';
+  const isEnumMember = esParent?.type === 'TSEnumMember';
+  const isLiteralType = esParent?.type === 'TSLiteralType';
   const isJSXAttribute = esParent?.type === 'JSXAttribute';
+
+  // Check if it's an assignment to a typed variable
+  let isTypedAssignment = false;
+  if (
+    esParent?.type === 'VariableDeclarator' &&
+    esParent.id.type === 'Identifier' &&
+    esParent.id.typeAnnotation
+  ) {
+    const typeAnn = esParent.id.typeAnnotation.typeAnnotation;
+    // If it's a TSTypeReference, it's a custom type (e.g. enum or union)
+    // If it's TSUnionType, it's an inline union
+    if (typeAnn.type === 'TSTypeReference' || typeAnn.type === 'TSUnionType') {
+      isTypedAssignment = true;
+    }
+  }
   const isImportSource =
     (esParent?.type === 'ImportDeclaration' ||
       esParent?.type === 'ExportNamedDeclaration' ||
@@ -271,6 +288,9 @@ export function checkEsTreeLiterals(
     !(
       isNamedConstant ||
       isObjectKey ||
+      isEnumMember ||
+      isLiteralType ||
+      isTypedAssignment ||
       isJSXAttribute ||
       isImportSource ||
       isRequireArg ||
@@ -337,6 +357,19 @@ export function checkBooleanTraps(
 ) {
   const { filePath, options, signals, issues } = ctx;
   if (options.checkBooleanTraps === false) return;
+
+  const normalizedPath = filePath.toLowerCase();
+  const isTestFile =
+    normalizedPath.endsWith('.test.ts') ||
+    normalizedPath.endsWith('.test.tsx') ||
+    normalizedPath.endsWith('.spec.ts') ||
+    normalizedPath.endsWith('.spec.tsx') ||
+    normalizedPath.includes('/test/') ||
+    normalizedPath.includes('/tests/') ||
+    normalizedPath.includes('__tests__');
+
+  if (isTestFile) return;
+
   const isLambdaContext = isLambdaHandlerFile(filePath);
 
   if (isTreeSitter) {
